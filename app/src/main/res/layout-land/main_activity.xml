@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/background_Image">
+
+    <Button
+        android:id="@+id/forwardBotton"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_marginTop="185dp"
+        android:layout_marginEnd="18dp"
+        android:background="@drawable/round_button"
+        android:visibility="visible"
+        app:layout_constrainBottom_toBottomOf="parent"
+        app:layout_constrainRight_toRightOf="parent"
+        app:layout_constrainTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="@+id/reverseBotton"
+        app:layout_constraintEnd_toStartOf="@+id/rightBotton"
+        app:layout_constraintStart_toStartOf="@+id/reverseBotton"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constrianLeft_toLeftOf="parent" />
+
+    <Button
+        android:id="@+id/reverseBotton"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_marginEnd="95dp"
+        android:layout_marginBottom="25dp"
+        android:background="@drawable/round_button"
+        android:visibility="visible"
+        app:layout_constrainBottom_toBottomOf="parent"
+        app:layout_constrainRight_toRightOf="parent"
+        app:layout_constrainTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constrianLeft_toLeftOf="parent" />
+
+    <Button
+        android:id="@+id/leftBotton"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_marginStart="380dp"
+        android:layout_marginBottom="75dp"
+        android:background="@drawable/round_button"
+        android:visibility="visible"
+        app:layout_constrainBottom_toBottomOf="parent"
+        app:layout_constrainRight_toRightOf="parent"
+        app:layout_constrainTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constrianLeft_toLeftOf="parent" />
+
+    <Button
+        android:id="@+id/rightBotton"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_marginEnd="26dp"
+        android:layout_marginBottom="75dp"
+        android:background="@drawable/round_button"
+        android:visibility="visible"
+        app:layout_constrainBottom_toBottomOf="parent"
+        app:layout_constrainRight_toRightOf="parent"
+        app:layout_constrainTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constrianLeft_toLeftOf="parent" />
+
+    <TextView
+        android:id="@+id/textStatusBox"
+        android:layout_width="176dp"
+        android:layout_height="33dp"
+        android:layout_marginTop="11dp"
+        android:layout_marginEnd="8dp"
+        android:background="#92b5bab9"
+        android:clickable="false"
+        android:text=""
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <View
+        android:id="@+id/view"
+        android:layout_width="383dp"
+        android:layout_height="196dp"
+        android:layout_marginStart="23dp"
+        android:layout_marginTop="11dp"
+        android:visibility="visible"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <Switch
+        android:id="@+id/cameraSwitch"
+        android:layout_width="166dp"
+        android:layout_height="26dp"
+        android:layout_marginStart="6dp"
+        android:layout_marginTop="9dp"
+        android:text="@string/camera"
+        android:textAllCaps="true"
+        android:textColor="@android:color/background_light"
+        android:textStyle="bold"
+        android:visibility="visible"
+        app:layout_constraintStart_toEndOf="@+id/view"
+        app:layout_constraintTop_toBottomOf="@+id/textStatusBox" />
+
+    <Button
+        android:id="@+id/robotONStatus"
+        android:layout_width="91dp"
+        android:layout_height="31dp"
+        android:layout_marginStart="44dp"
+        android:layout_marginBottom="36dp"
+        android:background="@android:color/holo_red_light"
+        android:text="@string/status2"
+        android:textStyle="bold"
+        android:visibility="visible"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <Button
+        android:id="@+id/cameraCenterButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="4dp"
+        android:layout_marginTop="9dp"
+        android:text="@string/center"
+        android:visibility="visible"
+        app:layout_constraintStart_toEndOf="@+id/view"
+        app:layout_constraintTop_toBottomOf="@+id/cameraSwitch" />
+
+    <Button
+        android:id="@+id/bluetoothButon"
+        android:layout_width="175dp"
+        android:layout_height="33dp"
+        android:layout_marginStart="40dp"
+        android:layout_marginBottom="29dp"
+        android:background="@drawable/ic_launcher_background"
+        android:text="@string/bluetooth"
+        android:visibility="visible"
+        app:layout_constraintBottom_toTopOf="@+id/robotONStatus"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <ImageButton
+        android:id="@+id/imageButton"
+        style="@style/Widget.AppCompat.ImageButton"
+        android:layout_width="30dp"
+        android:layout_height="53dp"
+        android:background="@drawable/bluetooth_icon"
+        android:scaleType="fitCenter"
+        android:visibility="visible"
+        tools:layout_editor_absoluteX="171dp"
+        tools:layout_editor_absoluteY="281dp" />
+
+
+</android.support.constraint.ConstraintLayout>

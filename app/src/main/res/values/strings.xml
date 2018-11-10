@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">CPE556_interface_APP</string>
+    <string name="camera">Camera Switch</string>
+    <string name="status">On</string>
+    <string name="status2">Robot ON</string>
+    <string name="center">Camera Center</string>
+    <string name="bluetooth">Connect Bluetooth</string>
+</resources>
