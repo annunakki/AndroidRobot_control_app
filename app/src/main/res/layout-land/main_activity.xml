@@ -2,71 +2,55 @@
 <android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/mainMenu"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/background_Image">
+    android:background="@drawable/doid_background_small"
+    tools:ignore="MissingDefaultResource">
 
     <Button
-        android:id="@+id/forwardBotton"
+        android:id="@+id/btnForward"
         android:layout_width="50dp"
         android:layout_height="50dp"
-        android:layout_marginTop="185dp"
-        android:layout_marginEnd="18dp"
+        android:layout_marginEnd="82dp"
+        android:layout_marginBottom="64dp"
         android:background="@drawable/round_button"
         android:visibility="visible"
-        app:layout_constrainBottom_toBottomOf="parent"
-        app:layout_constrainRight_toRightOf="parent"
-        app:layout_constrainTop_toTopOf="parent"
-        app:layout_constraintEnd_toEndOf="@+id/reverseBotton"
-        app:layout_constraintEnd_toStartOf="@+id/rightBotton"
-        app:layout_constraintStart_toStartOf="@+id/reverseBotton"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constrianLeft_toLeftOf="parent" />
+        app:layout_constraintBottom_toTopOf="@+id/btnReverse"
+        app:layout_constraintEnd_toEndOf="parent" />
 
     <Button
-        android:id="@+id/reverseBotton"
+        android:id="@+id/btnReverse"
         android:layout_width="50dp"
         android:layout_height="50dp"
-        android:layout_marginEnd="95dp"
-        android:layout_marginBottom="25dp"
+        android:layout_marginEnd="82dp"
+        android:layout_marginBottom="15dp"
         android:background="@drawable/round_button"
         android:visibility="visible"
-        app:layout_constrainBottom_toBottomOf="parent"
-        app:layout_constrainRight_toRightOf="parent"
-        app:layout_constrainTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constrianLeft_toLeftOf="parent" />
+        app:layout_constraintEnd_toEndOf="parent" />
 
     <Button
-        android:id="@+id/leftBotton"
+        android:id="@+id/btnTurnLeft"
         android:layout_width="50dp"
         android:layout_height="50dp"
-        android:layout_marginStart="380dp"
-        android:layout_marginBottom="75dp"
+        android:layout_marginEnd="87dp"
+        android:layout_marginBottom="66dp"
         android:background="@drawable/round_button"
         android:visibility="visible"
-        app:layout_constrainBottom_toBottomOf="parent"
-        app:layout_constrainRight_toRightOf="parent"
-        app:layout_constrainTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constrianLeft_toLeftOf="parent" />
+        app:layout_constraintEnd_toStartOf="@+id/btnTurnRight" />
 
     <Button
-        android:id="@+id/rightBotton"
+        android:id="@+id/btnTurnRight"
         android:layout_width="50dp"
         android:layout_height="50dp"
-        android:layout_marginEnd="26dp"
-        android:layout_marginBottom="75dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="65dp"
         android:background="@drawable/round_button"
         android:visibility="visible"
-        app:layout_constrainBottom_toBottomOf="parent"
-        app:layout_constrainRight_toRightOf="parent"
-        app:layout_constrainTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constrianLeft_toLeftOf="parent" />
+        app:layout_constraintEnd_toEndOf="parent" />
 
     <TextView
         android:id="@+id/textStatusBox"
@@ -81,7 +65,7 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <View
-        android:id="@+id/view"
+        android:id="@+id/viewCameraWindow"
         android:layout_width="383dp"
         android:layout_height="196dp"
         android:layout_marginStart="23dp"
@@ -91,7 +75,7 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <Switch
-        android:id="@+id/cameraSwitch"
+        android:id="@+id/swCamera"
         android:layout_width="166dp"
         android:layout_height="26dp"
         android:layout_marginStart="6dp"
@@ -101,55 +85,75 @@
         android:textColor="@android:color/background_light"
         android:textStyle="bold"
         android:visibility="visible"
-        app:layout_constraintStart_toEndOf="@+id/view"
+        app:layout_constraintStart_toEndOf="@+id/viewCameraWindow"
         app:layout_constraintTop_toBottomOf="@+id/textStatusBox" />
 
-    <Button
-        android:id="@+id/robotONStatus"
+    <TextView
+        android:id="@+id/txtRobotONStatus"
         android:layout_width="91dp"
-        android:layout_height="31dp"
+        android:layout_height="29dp"
         android:layout_marginStart="44dp"
         android:layout_marginBottom="36dp"
+        android:textAlignment="center"
         android:background="@android:color/holo_red_light"
         android:text="@string/status2"
         android:textStyle="bold"
-        android:visibility="visible"
+        android:visibility="invisible"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
 
     <Button
-        android:id="@+id/cameraCenterButton"
+        android:id="@+id/btnCameraCenter"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="4dp"
         android:layout_marginTop="9dp"
         android:text="@string/center"
         android:visibility="visible"
-        app:layout_constraintStart_toEndOf="@+id/view"
-        app:layout_constraintTop_toBottomOf="@+id/cameraSwitch" />
+        app:layout_constraintStart_toEndOf="@+id/viewCameraWindow"
+        app:layout_constraintTop_toBottomOf="@+id/swCamera" />
 
     <Button
-        android:id="@+id/bluetoothButon"
+        android:id="@+id/btnBluetooth"
         android:layout_width="175dp"
-        android:layout_height="33dp"
-        android:layout_marginStart="40dp"
-        android:layout_marginBottom="29dp"
+        android:layout_height="30dp"
+        android:layout_marginStart="44dp"
+        android:layout_marginBottom="21dp"
         android:background="@drawable/ic_launcher_background"
         android:text="@string/bluetooth"
         android:visibility="visible"
-        app:layout_constraintBottom_toTopOf="@+id/robotONStatus"
+        app:layout_constraintBottom_toTopOf="@+id/btnImage"
         app:layout_constraintStart_toStartOf="parent" />
 
     <ImageButton
-        android:id="@+id/imageButton"
+        android:id="@+id/btnImage"
         style="@style/Widget.AppCompat.ImageButton"
         android:layout_width="30dp"
         android:layout_height="53dp"
+        android:layout_marginStart="25dp"
+        android:layout_marginBottom="25dp"
         android:background="@drawable/bluetooth_icon"
+        android:contentDescription="@android:string/ok"
         android:scaleType="fitCenter"
         android:visibility="visible"
-        tools:layout_editor_absoluteX="171dp"
-        tools:layout_editor_absoluteY="281dp" />
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/txtRobotONStatus" />
+
+    <Button
+        android:id="@+id/btnSettings"
+        android:layout_width="95dp"
+        android:layout_height="30dp"
+        android:layout_marginStart="14dp"
+        android:layout_marginBottom="99dp"
+        android:background="#e40f0f"
+        android:clickable="true"
+        android:focusable="true"
+        android:text="@string/settings"
+        android:textAlignment="center"
+        android:textStyle="bold"
+        android:visibility="visible"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/btnBluetooth" />
 
 
 </android.support.constraint.ConstraintLayout>
