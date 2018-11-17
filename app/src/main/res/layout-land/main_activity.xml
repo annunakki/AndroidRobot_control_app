@@ -16,8 +16,10 @@
         android:layout_marginBottom="64dp"
         android:background="@drawable/round_button"
         android:visibility="visible"
+        android:clickable="true"
         app:layout_constraintBottom_toTopOf="@+id/btnReverse"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintEnd_toEndOf="parent"
+        android:focusable="true" />
 
     <Button
         android:id="@+id/btnReverse"
@@ -27,6 +29,7 @@
         android:layout_marginBottom="15dp"
         android:background="@drawable/round_button"
         android:visibility="visible"
+        android:clickable="true"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
@@ -38,6 +41,7 @@
         android:layout_marginBottom="66dp"
         android:background="@drawable/round_button"
         android:visibility="visible"
+        android:clickable="true"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/btnTurnRight" />
 
@@ -49,15 +53,16 @@
         android:layout_marginBottom="65dp"
         android:background="@drawable/round_button"
         android:visibility="visible"
+        android:clickable="true"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
     <TextView
         android:id="@+id/textStatusBox"
         android:layout_width="176dp"
-        android:layout_height="33dp"
-        android:layout_marginTop="11dp"
-        android:layout_marginEnd="8dp"
+        android:layout_height="32dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="56dp"
         android:background="#92b5bab9"
         android:clickable="false"
         android:text=""
@@ -66,7 +71,7 @@
 
     <View
         android:id="@+id/viewCameraWindow"
-        android:layout_width="383dp"
+        android:layout_width="331dp"
         android:layout_height="196dp"
         android:layout_marginStart="23dp"
         android:layout_marginTop="11dp"
@@ -78,14 +83,14 @@
         android:id="@+id/swCamera"
         android:layout_width="166dp"
         android:layout_height="26dp"
-        android:layout_marginStart="6dp"
-        android:layout_marginTop="9dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginEnd="66dp"
         android:text="@string/camera"
         android:textAllCaps="true"
         android:textColor="@android:color/background_light"
         android:textStyle="bold"
         android:visibility="visible"
-        app:layout_constraintStart_toEndOf="@+id/viewCameraWindow"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textStatusBox" />
 
     <TextView
@@ -106,11 +111,12 @@
         android:id="@+id/btnCameraCenter"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="4dp"
         android:layout_marginTop="9dp"
+        android:layout_marginEnd="97dp"
+        android:clickable="true"
         android:text="@string/center"
         android:visibility="visible"
-        app:layout_constraintStart_toEndOf="@+id/viewCameraWindow"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/swCamera" />
 
     <Button
@@ -122,20 +128,23 @@
         android:background="@drawable/ic_launcher_background"
         android:text="@string/bluetooth"
         android:visibility="visible"
+        android:clickable="true"
+        android:onClick="btMenu"
         app:layout_constraintBottom_toTopOf="@+id/btnImage"
         app:layout_constraintStart_toStartOf="parent" />
 
     <ImageButton
         android:id="@+id/btnImage"
         style="@style/Widget.AppCompat.ImageButton"
-        android:layout_width="30dp"
+        android:layout_width="31dp"
         android:layout_height="53dp"
         android:layout_marginStart="25dp"
         android:layout_marginBottom="25dp"
         android:background="@drawable/bluetooth_icon"
         android:contentDescription="@android:string/ok"
         android:scaleType="fitCenter"
-        android:visibility="visible"
+        android:clickable="false"
+        android:visibility="invisible"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toEndOf="@+id/txtRobotONStatus" />
 
@@ -152,6 +161,7 @@
         android:textAlignment="center"
         android:textStyle="bold"
         android:visibility="visible"
+        android:onClick="settingMenu"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toEndOf="@+id/btnBluetooth" />
 

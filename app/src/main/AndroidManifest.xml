@@ -19,7 +19,8 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".BluetoothMenu"></activity>
+        <activity android:name=".BluetoothMenu" />
+        <activity android:name=".SettingMenu" />
     </application>
 
 </manifest>

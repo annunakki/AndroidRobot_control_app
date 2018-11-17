@@ -5,7 +5,12 @@
     <string name="center">Camera Center</string>
     <string name="bluetooth">Connect Bluetooth</string>
     <string name="settings">settings</string>
-    <string name="bluetoothssw">Bluetooth Switch</string>
+    <string name="bluetoothON">Bluetooth ON</string>
     <string name="bluetoothsh">Bluetooth Search</string>
     <string name="bluetoothpair">BT Pairing</string>
+    <string name="title_activity_main2">Main2Activity</string>
+    <string name="title_home">Home</string>
+    <string name="title_dashboard">Dashboard</string>
+    <string name="title_notifications">Notifications</string>
+    <string name="bluetoothOff">Bluetooth OFF</string>
 </resources>
