@@ -71,6 +71,8 @@ import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
+import android.content.Intent;
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.view.MotionEvent;
 import android.view.View;
@@ -78,7 +80,7 @@ import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
-
+import java.lang.String;
 import java.io.IOException;
 import java.util.Set;
 import java.util.UUID;
@@ -87,43 +89,60 @@ public class MainActivity extends Activity implements OnClickListener {
 
     Button i1;
     TextView t1;
-
     String address = null , name=null;
-
     BluetoothAdapter myBluetooth = null;
     BluetoothSocket btSocket = null;
     Set<BluetoothDevice> pairedDevices;
     static final UUID myUUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
+    private Button btnSettings, btnBTConnect, btnForward, btnReverse, btnLeft, btnRight, btnCameraCenter;
+    private TextView textStatus;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main_activity);
-        try {setw();} catch (Exception e) {}
+        try {initialize();} catch (Exception e) {}
     }
 
     @SuppressLint("ClickableViewAccessibility")
-    private void setw() throws IOException
-    {
-        t1=(TextView)findViewById(R.id.textStatusBox);
+
+    private void initialize() throws IOException {
+
+        btnForward = (Button) findViewById(R.id.btnForward);
+        btnReverse = (Button) findViewById((R.id.btnReverse));
+        btnLeft = (Button) findViewById(R.id.btnTurnLeft);
+        btnRight = (Button) findViewById(R.id.btnTurnRight);
+        textStatus = (TextView) findViewById(R.id.textStatusBox);
+
+        setButtonListener (btnForward, "F");  //move forward
+        setButtonListener (btnReverse, "B");  // move reverse or backward
+        setButtonListener (btnLeft, "L");  // move to the left
+        setButtonListener (btnRight, "R");  //move to the right
+
+
+
+////
+//        t1=(TextView)findViewById(R.id.textStatusBox);
         bluetooth_connect_device();
 
 
 
-        i1=(Button)findViewById(R.id.btnForward);
+//        i1=(Button)findViewById(R.id.btnForward);
 
-        i1.setOnTouchListener(new View.OnTouchListener()
-        {   @Override
-        public boolean onTouch(View v, MotionEvent event){
-            if(event.getAction() == MotionEvent.ACTION_DOWN) {led_on_off("1");
-            System.out.print("forward down\n");}
-            if(event.getAction() == MotionEvent.ACTION_UP){led_on_off("0");
-                System.out.print("forward up\n");}
-            return true;}
-        });
+//        i1.setOnTouchListener(new View.OnTouchListener()
+//        {   @Override
+//        public boolean onTouch(View v, MotionEvent event){
+//            if(event.getAction() == MotionEvent.ACTION_DOWN) {led_on_off("1");
+//            System.out.print("forward down\n");}
+//            if(event.getAction() == MotionEvent.ACTION_UP){led_on_off("0");
+//                System.out.print("forward up\n");}
+//            return true;}
+//        });
 
     }
+
 
     private void bluetooth_connect_device() throws IOException
     {
@@ -152,41 +171,82 @@ public class MainActivity extends Activity implements OnClickListener {
         catch(Exception e){}
     }
 
+
+
+
+    @SuppressLint("ClickableViewAccessibility")
+    public void  setButtonListener(final Button btn, final String chr){
+        btn.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                    setBtnStreamChar(chr);
+                    System.out.println(btn.toString());
+                }
+                if (event.getAction() == MotionEvent.ACTION_UP) {
+                    setBtnStreamChar("0");
+                    System.out.println("robot stopped");
+                }
+                return true;
+            }});
+        }
+
+
     @Override
     public void onClick(View v)
     {
         try
         {
-
         }
         catch (Exception e)
         {
             Toast.makeText(getApplicationContext(),e.getMessage(), Toast.LENGTH_SHORT).show();
-
         }
-
     }
 
-    private void led_on_off(String i)
-    {
+    private void setBtnStreamChar (String streamChr){  // sets the assigned character to the selected button
         try
         {
             if (btSocket!=null)
             {
-
-                btSocket.getOutputStream().write(i.toString().getBytes());
+                btSocket.getOutputStream().write(streamChr.toString().getBytes());
                 System.out.println(btSocket.toString());
-
                 System.out.println(btSocket.getOutputStream());
                 System.out.println("===============================");
             }
-
         }
         catch (Exception e)
         {
             Toast.makeText(getApplicationContext(),e.getMessage(), Toast.LENGTH_SHORT).show();
-
         }
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+
+        // Checks the orientation of the screen
+        if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            Toast.makeText(this, "landscape", Toast.LENGTH_SHORT).show();
+        } else if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT){
+            Toast.makeText(this, "portrait", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+
+    public void btMenu(View v){
+
+        Intent intentSettings = new Intent(this,BluetoothMenu.class);
+        startActivity(intentSettings);
+
+
+    }
+
+    public void settingMenu(View v){
+
+        Intent intentSettings = new Intent(this,SettingMenu.class);
+        startActivity(intentSettings);
+
 
     }
 
