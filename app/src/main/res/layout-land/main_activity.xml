@@ -12,24 +12,28 @@
         android:id="@+id/btnForward"
         android:layout_width="50dp"
         android:layout_height="50dp"
-        android:layout_marginEnd="82dp"
+        android:layout_marginEnd="88dp"
         android:layout_marginBottom="64dp"
         android:background="@drawable/round_button"
-        android:visibility="visible"
         android:clickable="true"
+        android:focusable="true"
+        android:focusableInTouchMode="true"
+        android:onClick="moveForward"
+        android:visibility="visible"
         app:layout_constraintBottom_toTopOf="@+id/btnReverse"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:focusable="true" />
+        app:layout_constraintEnd_toEndOf="parent" />
 
     <Button
         android:id="@+id/btnReverse"
         android:layout_width="50dp"
         android:layout_height="50dp"
-        android:layout_marginEnd="82dp"
-        android:layout_marginBottom="15dp"
+        android:layout_marginEnd="88dp"
+        android:layout_marginBottom="12dp"
         android:background="@drawable/round_button"
-        android:visibility="visible"
         android:clickable="true"
+        android:onClick="moveReverse"
+        android:visibility="visible"
+        android:focusable="true"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
@@ -37,11 +41,13 @@
         android:id="@+id/btnTurnLeft"
         android:layout_width="50dp"
         android:layout_height="50dp"
-        android:layout_marginEnd="87dp"
-        android:layout_marginBottom="66dp"
+        android:layout_marginEnd="80dp"
+        android:layout_marginBottom="64dp"
         android:background="@drawable/round_button"
-        android:visibility="visible"
         android:clickable="true"
+        android:onClick="turnLeft"
+        android:visibility="visible"
+        android:focusable="true"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/btnTurnRight" />
 
@@ -49,11 +55,13 @@
         android:id="@+id/btnTurnRight"
         android:layout_width="50dp"
         android:layout_height="50dp"
-        android:layout_marginEnd="16dp"
-        android:layout_marginBottom="65dp"
+        android:layout_marginEnd="24dp"
+        android:layout_marginBottom="64dp"
         android:background="@drawable/round_button"
-        android:visibility="visible"
         android:clickable="true"
+        android:focusable="true"
+        android:onClick="turnRight"
+        android:visibility="visible"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
@@ -65,6 +73,7 @@
         android:layout_marginEnd="56dp"
         android:background="#92b5bab9"
         android:clickable="false"
+        android:textAlignment="center"
         android:text=""
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -90,6 +99,8 @@
         android:textColor="@android:color/background_light"
         android:textStyle="bold"
         android:visibility="visible"
+        android:textOn="Camera ON"
+        android:textOff="Camera OFF"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textStatusBox" />
 
@@ -129,9 +140,10 @@
         android:text="@string/bluetooth"
         android:visibility="visible"
         android:clickable="true"
-        android:onClick="btMenu"
+        android:onClick="connectBluetooth"
         app:layout_constraintBottom_toTopOf="@+id/btnImage"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintStart_toStartOf="parent"
+        tools:ignore="OnClick" />
 
     <ImageButton
         android:id="@+id/btnImage"

@@ -72,23 +72,23 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.content.Intent;
-import android.content.res.Configuration;
 import android.os.Bundle;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
+import android.widget.ImageButton;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
-import java.lang.String;
+
 import java.io.IOException;
 import java.util.Set;
 import java.util.UUID;
 
 public class MainActivity extends Activity implements OnClickListener {
 
-    Button i1;
-    TextView t1;
+
     String address = null , name=null;
     BluetoothAdapter myBluetooth = null;
     BluetoothSocket btSocket = null;
@@ -96,36 +96,62 @@ public class MainActivity extends Activity implements OnClickListener {
     static final UUID myUUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
     private Button btnSettings, btnBTConnect, btnForward, btnReverse, btnLeft, btnRight, btnCameraCenter;
     private TextView textStatus;
+    private Switch cameraSW;
+    private ImageButton btImage;
+    public final String msgForward = " moving forward";
+    public  final String msgStop = " robot stopped";
+    public final String msgBackward = " moving reverse";
+    public  final String msgLeft = " robot left";
+    public final String msgRight = " moving right";
+
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
+
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main_activity);
         try {initialize();} catch (Exception e) {}
+
+
     }
 
     @SuppressLint("ClickableViewAccessibility")
 
-    private void initialize() throws IOException {
+    private void initialize() {
 
-        btnForward = (Button) findViewById(R.id.btnForward);
-        btnReverse = (Button) findViewById((R.id.btnReverse));
-        btnLeft = (Button) findViewById(R.id.btnTurnLeft);
-        btnRight = (Button) findViewById(R.id.btnTurnRight);
-        textStatus = (TextView) findViewById(R.id.textStatusBox);
+        btnForward =  findViewById(R.id.btnForward);
+        btnReverse =  findViewById((R.id.btnReverse));
+        btnLeft = findViewById(R.id.btnTurnLeft);
+        btnRight =  findViewById(R.id.btnTurnRight);
+        textStatus =  findViewById(R.id.textStatusBox);
+        btImage =  findViewById(R.id.btnImage);
+        cameraSW =  findViewById(R.id.swCamera) ;
+        btImage.setVisibility(View.INVISIBLE);
 
-        setButtonListener (btnForward, "F");  //move forward
-        setButtonListener (btnReverse, "B");  // move reverse or backward
-        setButtonListener (btnLeft, "L");  // move to the left
-        setButtonListener (btnRight, "R");  //move to the right
+//        btnForward.setOnClickListener(new OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                moveForward();
+//            }
+//        });
+
+
+
+//        setButtonListener (btnForward, "F");  //move forward
+//        setButtonListener (btnReverse, "B");  // move reverse or backward
+//        setButtonListener (btnLeft, "L");  // move to the left
+//        setButtonListener (btnRight, "R");  //move to the right
+
+
 
 
 
 ////
 //        t1=(TextView)findViewById(R.id.textStatusBox);
-        bluetooth_connect_device();
+        ///bluetooth_connect_device();
 
 
 
@@ -144,30 +170,40 @@ public class MainActivity extends Activity implements OnClickListener {
     }
 
 
-    private void bluetooth_connect_device() throws IOException
+    public void connectBluetooth(View v) throws IOException
     {
+
+
         try
         {
             myBluetooth = BluetoothAdapter.getDefaultAdapter();
+            if (!myBluetooth.isEnabled()){
+                Intent turnOn = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+                startActivityForResult(turnOn, 0);
+                Toast.makeText(getApplicationContext(), "BT is Turned on",Toast.LENGTH_LONG).show();
+            }
+
             address = myBluetooth.getAddress();
             pairedDevices = myBluetooth.getBondedDevices();
             if (pairedDevices.size()>0)
             {
                 for(BluetoothDevice bt : pairedDevices)
                 {
-                    address=bt.getAddress().toString();name = bt.getName().toString();
+                    address=bt.getAddress();
+                    name = bt.getName();
                     Toast.makeText(getApplicationContext(),"Connected", Toast.LENGTH_SHORT).show();
+                    btImage.setVisibility(View.VISIBLE);
 
                 }
             }
 
         }
         catch(Exception we){}
-        myBluetooth = BluetoothAdapter.getDefaultAdapter();//get the mobile bluetooth device
+        //myBluetooth = BluetoothAdapter.getDefaultAdapter();//get the mobile bluetooth device
         BluetoothDevice dispositivo = myBluetooth.getRemoteDevice(address);//connects to the device's address and checks if it's available
         btSocket = dispositivo.createInsecureRfcommSocketToServiceRecord(myUUID);//create a RFCOMM (SPP) connection
         btSocket.connect();
-        try { t1.setText("BT Name: "+name+"\nBT Address: "+address); }
+        try { textStatus.setText("BT Name: "+name+"\nBT Address: "+address); }
         catch(Exception e){}
     }
 
@@ -175,21 +211,108 @@ public class MainActivity extends Activity implements OnClickListener {
 
 
     @SuppressLint("ClickableViewAccessibility")
-    public void  setButtonListener(final Button btn, final String chr){
-        btn.setOnTouchListener(new View.OnTouchListener() {
+//    public void  setButtonListener(final Button btn, final String chr){
+//        btn.setOnTouchListener(new View.OnTouchListener() {
+//            @Override
+//            public boolean onTouch(View v, MotionEvent event) {
+//                if (event.getAction() == MotionEvent.ACTION_DOWN) {
+//                    setBtnStreamChar(chr);
+//                    System.out.println(btn.toString());
+//                }
+//                if (event.getAction() == MotionEvent.ACTION_UP) {
+//                    setBtnStreamChar("0");
+//                    System.out.println("robot stopped");
+//                }
+//                return true;
+//            }});
+//        }
+
+   public void stopMSGDisplay(){
+        setBtnStreamChar("0");
+        System.out.println(msgStop);
+        textStatus.setText(msgStop);
+    }
+
+    public void moveScreenStatus(String s){
+
+        System.out.println(s);
+        textStatus.setText(s);
+
+    }
+
+    public void moveForward (View v){
+
+        btnForward.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                    setBtnStreamChar(chr);
-                    System.out.println(btn.toString());
+                    setBtnStreamChar("F");
+                    moveScreenStatus(msgForward);
+
                 }
                 if (event.getAction() == MotionEvent.ACTION_UP) {
-                    setBtnStreamChar("0");
-                    System.out.println("robot stopped");
+                    stopMSGDisplay();
                 }
                 return true;
             }});
-        }
+
+    }
+
+    public void moveReverse (View v){
+
+        btnReverse.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+
+                if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                    setBtnStreamChar("B");
+                    moveScreenStatus(msgBackward);
+
+                }
+                if (event.getAction() == MotionEvent.ACTION_UP) {
+                    stopMSGDisplay();
+                }
+                return true;
+            }});
+
+    }
+
+    public void turnLeft (View v){
+
+        btnLeft.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                    setBtnStreamChar("F");
+                    moveScreenStatus(msgLeft);
+
+                }
+                if (event.getAction() == MotionEvent.ACTION_UP) {
+                    stopMSGDisplay();
+                }
+                return true;
+            }});
+
+    }
+
+    public void turnRight (View v){
+        final String msgRight = "turning right";
+        btnRight.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+
+            public boolean onTouch(View v, MotionEvent event) {
+                if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                    setBtnStreamChar("F");
+                    moveScreenStatus(msgRight);
+
+                }
+                if (event.getAction() == MotionEvent.ACTION_UP) {
+                    stopMSGDisplay();
+                }
+                return true;
+            }});
+
+    }
 
 
     @Override
@@ -209,7 +332,7 @@ public class MainActivity extends Activity implements OnClickListener {
         {
             if (btSocket!=null)
             {
-                btSocket.getOutputStream().write(streamChr.toString().getBytes());
+                btSocket.getOutputStream().write(streamChr.getBytes());
                 System.out.println(btSocket.toString());
                 System.out.println(btSocket.getOutputStream());
                 System.out.println("===============================");
@@ -221,33 +344,36 @@ public class MainActivity extends Activity implements OnClickListener {
         }
     }
 
-    @Override
-    public void onConfigurationChanged(Configuration newConfig) {
-        super.onConfigurationChanged(newConfig);
-
-        // Checks the orientation of the screen
-        if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
-            Toast.makeText(this, "landscape", Toast.LENGTH_SHORT).show();
-        } else if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT){
-            Toast.makeText(this, "portrait", Toast.LENGTH_SHORT).show();
-        }
-    }
-
-
-    public void btMenu(View v){
-
-        Intent intentSettings = new Intent(this,BluetoothMenu.class);
-        startActivity(intentSettings);
+//    @Override
+//    public void onConfigurationChanged(Configuration newConfig) {
+//        super.onConfigurationChanged(newConfig);
+//
+//        // Checks the orientation of the screen
+//        if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+//            Toast.makeText(this, "landscape", Toast.LENGTH_SHORT).show();
+//        } else if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT){
+//            Toast.makeText(this, "portrait", Toast.LENGTH_SHORT).show();
+//        }
+//    }
 
 
-    }
+//    public void btMenu(View v){
+//
+//        Intent intentSettings = new Intent(this,BluetoothMenu.class);
+//        startActivity(intentSettings);
+//
+//
+//    }
 
     public void settingMenu(View v){
 
         Intent intentSettings = new Intent(this,SettingMenu.class);
         startActivity(intentSettings);
 
-
     }
-
+//    public void cameraSwitch(View v) {
+//        if (cameraSW.isChecked())
+//
+//
+//    }
 }
