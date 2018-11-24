@@ -1,37 +1,32 @@
-//package com.stevensit.www.cpe556_interface_app;
-//
-//import android.content.Context;
-//import android.hardware.Sensor;
-//import android.hardware.SensorEvent;
-//import android.hardware.SensorEventListener;
-//import android.hardware.SensorManager;
-//import android.widget.TextView;
-//import android.widget.Toast;
-//
-//import java.util.List;
-//
-//public class SensorsSystem extends MainActivity implements SensorEventListener {
-//
+package com.stevensit.www.cpe556_interface_app;
+
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+
+public class SensorsSystem extends MainActivity implements SensorEventListener {
+
 //    private SensorManager mSensorManager;
 //    private Sensor sensor;
 //    private List sensorList;
-//    //private TextView txtSensorOutput;
+   // private TextView txtAccelSensorOutput ,txtGyroSensorOut ;
+    //private TextView txtSensorOutput;
+
+
+   // SensorEventListener sensorListener;//= new SensorEventListener() {
+//        @Override
+//        public void onSensorChanged(SensorEvent event) {
+//            float[] values = event.values;
+//            txtSensorOutput.setText("X:" + values[0] + "\n" + "Y:" + values[1] + "\n" + "Z:" + values[2]);
+//        }
 //
+//        @Override
+//        public void onAccuracyChanged(Sensor sensor, int accuracy) {
 //
-//    SensorEventListener sensorListener;//= new SensorEventListener() {
-////        @Override
-////        public void onSensorChanged(SensorEvent event) {
-////            float[] values = event.values;
-////            txtSensorOutput.setText("X:" + values[0] + "\n" + "Y:" + values[1] + "\n" + "Z:" + values[2]);
-////        }
-////
-////        @Override
-////        public void onAccuracyChanged(Sensor sensor, int accuracy) {
-////
-////        }
-////    };
-//
-//
+//        }
+//    };
+
+
 //    public SensorsSystem() {
 //
 //
@@ -44,20 +39,35 @@
 //            Toast.makeText(getApplicationContext(),"no accelerometer sensor detected",Toast.LENGTH_SHORT).show();
 //
 //    }
-//
-//
+
+
 //    @Override
-//    public void onSensorChanged(SensorEvent event) {
-//        float[] values = event.values;
-//        txtSensorOutput.setText("X:" + values[0] + "\n" + "Y:" + values[1] + "\n" + "Z:" + values[2]);
+//    public void onCreate(Bundle savedInstanceState) {
+//        super.onCreate(savedInstanceState);
+//
+//        txtAccelSensorOutput = findViewById(R.id.txtAccelSensorOut);
+//        txtGyroSensorOut = findViewById(R.id.txtGyroSensorOut);
 //    }
-//
-//
-//    @Override
-//    public void onAccuracyChanged(Sensor sensor, int accuracy) {
-//
-//    }
-//
+
+    @Override
+    public void onSensorChanged(SensorEvent event) {
+        float[] values = event.values;
+        Sensor sens = event.sensor;
+
+       // if (sens.getType() == Sensor.TYPE_ACCELEROMETER)
+            txtAccelSensorOutput.setText("accel\n"+"X:" + values[0] + "\n" + "Y:" + values[1] + "\n" + "Z:" + values[2]);
+
+//        if (sens.getType() == Sensor.TYPE_GYROSCOPE)
+//            txtGyroSensorOut.setText("gyro\n"+"X:" + values[0] + "\n" + "Y:" + values[1] + "\n" + "Z:" + values[2]);
+
+    }
+
+
+    @Override
+    public void onAccuracyChanged(Sensor sensor, int accuracy) {
+
+    }
+
 //    @Override
 //    public void onStop() {
 //        if (sensorList.size() > 0) {
@@ -65,4 +75,4 @@
 //        }
 //        super.onStop();
 //    }
-//}
+}

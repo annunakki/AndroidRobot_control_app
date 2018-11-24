@@ -99,7 +99,7 @@ import java.util.UUID;
 
 import static android.view.animation.Animation.REVERSE;
 
-public class MainActivity extends Activity implements OnClickListener, SensorEventListener{
+public class MainActivity extends Activity implements OnClickListener, SensorEventListener {
 
 
     String address = null , name=null;
@@ -120,10 +120,10 @@ public class MainActivity extends Activity implements OnClickListener, SensorEve
     //=======sensors segment ========
 
     private SensorManager mSensorManager;
-    public  Sensor sensor;
-    private List sensorList;
-    public TextView txtSensorOutput;
-    public SensorEventListener sensorListener;
+    public  Sensor snsAccel, snsGyro;
+    private List snListAccel, snListGyro;
+    public TextView txtAccelSensorOutput, txtGyroSensorOut;
+    public SensorEventListener gyroListener, accelListener;
 
 
     @Override
@@ -190,6 +190,8 @@ public class MainActivity extends Activity implements OnClickListener, SensorEve
         cameraSW =  findViewById(R.id.swCamera) ;
         btImage.setVisibility(View.INVISIBLE);
         robotReadyStatus.setVisibility(View.INVISIBLE);
+        txtAccelSensorOutput = findViewById(R.id.txtAccelSensorOut);
+        txtGyroSensorOut = findViewById(R.id.txtGyroSensorOut);
 
 
 //        btnForward.setOnClickListener(new OnClickListener() {
@@ -449,29 +451,62 @@ public class MainActivity extends Activity implements OnClickListener, SensorEve
 
     public void sensorsSystemInitialize() {
 
-        final DecimalFormat numFormat = new DecimalFormat("#.##");
-        txtSensorOutput = findViewById(R.id.txtSensorOut);
-        sensorListener = new SensorEventListener() {
+        final DecimalFormat numFormat = new DecimalFormat("#.#"); // to change sensor output decimal resolution
+//        txtAccelSensorOutput = findViewById(R.id.txtAccelSensorOut);
+//        txtGyroSensorOut = findViewById(R.id.txtGyroSensorOut);
 
-            public void onSensorChanged(SensorEvent event) {
+        accelListener = new SensorsSystem();
+        gyroListener = new SensorsSystem();
+//
+//            @Override
+//
+//            public void onSensorChanged(SensorEvent event) {
+//                float[] values = event.values;
+//                txtAccelSensorOutput.setText("Linear Accel\n"+"X:" + roundDecimalNum(values[0],numFormat) + "\n" + "Y:" + roundDecimalNum(values[1],numFormat) + "\n" + "Z:" + roundDecimalNum(values[2],numFormat));
+//              //  txtGyroSensorOut.setText("Gyro rad/s \n"+"X:" + roundDecimalNum(values[0],numFormat) + "\n" + "Y:" + roundDecimalNum(values[1],numFormat) + "\n" + "Z:" + roundDecimalNum(values[2],numFormat));
+//
+//            }
+//            @Override
+//
+//            public void onAccuracyChanged(Sensor sensor, int accuracy) {
+//
+//            }
+//        };
 
-                float[] values = event.values;
-                txtSensorOutput.setText("X:" + roundDecimalNum(values[0],numFormat) + "\n" + "Y:" + roundDecimalNum(values[1],numFormat) + "\n" + "Z:" + roundDecimalNum(values[2],numFormat));
-            }
 
-            public void onAccuracyChanged(Sensor sensor, int accuracy) {
-
-            }
-        };
+//            @Override
+//
+//            public void onSensorChanged(SensorEvent event) {
+//
+//                float[] values = event.values;
+//               // txtAccelSensorOutput.setText("Linear Accel\n"+"X:" + roundDecimalNum(values[0],numFormat) + "\n" + "Y:" + roundDecimalNum(values[1],numFormat) + "\n" + "Z:" + roundDecimalNum(values[2],numFormat));
+//                txtGyroSensorOut.setText("Gyro rad/s \n"+"X:" + roundDecimalNum(values[0],numFormat) + "\n" + "Y:" + roundDecimalNum(values[1],numFormat) + "\n" + "Z:" + roundDecimalNum(values[2],numFormat));
+//
+//            }
+//            @Override
+//
+//            public void onAccuracyChanged(Sensor sensor, int accuracy) {
+//
+//            }
+//        };
 
         mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
-        sensor = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-        sensorList = mSensorManager.getSensorList(Sensor.TYPE_ACCELEROMETER);
-        if (sensorList.size() > 0)
-            mSensorManager.registerListener(sensorListener, (Sensor) sensorList.get(0), SensorManager.SENSOR_DELAY_NORMAL);
+
+        snsAccel = mSensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION);
+        snsGyro = mSensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
+
+        snListAccel = mSensorManager.getSensorList(Sensor.TYPE_LINEAR_ACCELERATION);
+        snListGyro = mSensorManager.getSensorList(Sensor.TYPE_GYROSCOPE);
+
+        if (snListAccel.size() > 0)
+            mSensorManager.registerListener(accelListener, (Sensor) snListAccel.get(0), SensorManager.SENSOR_DELAY_NORMAL);
         else
             Toast.makeText(getApplicationContext(),"no accelerometer sensor detected",Toast.LENGTH_SHORT).show();
 
+        if (snListGyro.size() > 0)
+            mSensorManager.registerListener(gyroListener, (Sensor) snListGyro.get(0), SensorManager.SENSOR_DELAY_NORMAL);
+        else
+            Toast.makeText(getApplicationContext(),"no gyroscope sensor detected",Toast.LENGTH_SHORT).show();
     }
 
 
@@ -487,8 +522,11 @@ public class MainActivity extends Activity implements OnClickListener, SensorEve
 
     @Override
     public void onStop() {
-        if (sensorList.size() > 0) {
-            mSensorManager.unregisterListener(sensorListener);
+        if (snListAccel.size() > 0) {
+            mSensorManager.unregisterListener(accelListener);
+        }
+        if (snListGyro.size() > 0) {
+            mSensorManager.unregisterListener(gyroListener);
         }
         super.onStop();
     }
@@ -501,6 +539,24 @@ public class MainActivity extends Activity implements OnClickListener, SensorEve
 
 
     }
+//
+//    public class SensorListener implements SensorEventListener{
+//
+//
+//      @Override
+//        public void onSensorChanged(SensorEvent event) {
+//
+//          txtAccelSensorOutput.setText("Linear Accel\n"+"X:" + roundDecimalNum(values[0],numFormat) + "\n" + "Y:" + roundDecimalNum(values[1],numFormat) + "\n" + "Z:" + roundDecimalNum(values[2],numFormat));
+//          txtGyroSensorOut.setText("Gyro rad/s \n"+"X:" + roundDecimalNum(values[0],numFormat) + "\n" + "Y:" + roundDecimalNum(values[1],numFormat) + "\n" + "Z:" + roundDecimalNum(values[2],numFormat));
+//
+//
+//        }
+//
+//        @Override
+//        public void onAccuracyChanged(Sensor sensor, int accuracy) {
+//
+//        }
+//    }
 
 
 
