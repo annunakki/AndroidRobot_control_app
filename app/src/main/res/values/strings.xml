@@ -13,4 +13,5 @@
     <string name="title_dashboard">Dashboard</string>
     <string name="title_notifications">Notifications</string>
     <string name="bluetoothOff">Bluetooth OFF</string>
+    <string name="front_msg">Rotate the phone to use all available options</string>
 </resources>

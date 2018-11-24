@@ -71,11 +71,20 @@ import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
+import android.content.Context;
 import android.content.Intent;
+import android.content.res.Configuration;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.os.Bundle;
+import android.os.Handler;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.animation.AlphaAnimation;
+import android.view.animation.Animation;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.Switch;
@@ -83,10 +92,14 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.IOException;
+import java.text.DecimalFormat;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-public class MainActivity extends Activity implements OnClickListener {
+import static android.view.animation.Animation.REVERSE;
+
+public class MainActivity extends Activity implements OnClickListener, SensorEventListener{
 
 
     String address = null , name=null;
@@ -95,27 +108,72 @@ public class MainActivity extends Activity implements OnClickListener {
     Set<BluetoothDevice> pairedDevices;
     static final UUID myUUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
     private Button btnSettings, btnBTConnect, btnForward, btnReverse, btnLeft, btnRight, btnCameraCenter;
-    private TextView textStatus;
+    private TextView textStatus,blinkText,robotReadyStatus;
     private Switch cameraSW;
     private ImageButton btImage;
-    public final String msgForward = " moving forward";
-    public  final String msgStop = " robot stopped";
-    public final String msgBackward = " moving reverse";
-    public  final String msgLeft = " robot left";
-    public final String msgRight = " moving right";
+    public final String msgForward = "MOVING FORWARD";
+    public  final String msgStop = "ROBOT STOPPED";
+    public final String msgBackward = "MOVING IN REVERSE";
+    public  final String msgLeft = "TURNING LEFT";
+    public final String msgRight = "TURNING RIGHT";
 
+    //=======sensors segment ========
+
+    private SensorManager mSensorManager;
+    public  Sensor sensor;
+    private List sensorList;
+    public TextView txtSensorOutput;
+    public SensorEventListener sensorListener;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
-
-
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main_activity);
-        try {initialize();} catch (Exception e) {}
+       // System.out.println("current orientation "+getResources().getConfiguration().orientation);
+      try {initialize();} catch (Exception e) {}
 
 
+        sensorsSystemInitialize();
+
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig){
+        super.onConfigurationChanged(newConfig);
+        int orientation = newConfig.orientation;
+        System.out.println(orientation);
+        if(orientation == Configuration.ORIENTATION_PORTRAIT){
+            System.out.println("screen is portrait");
+            System.out.println(orientation);
+        }
+        else
+            System.out.println(orientation);
+
+
+    }
+
+    public void setBlinkingText (TextView obj)  {  // to enable the blinking option on the selected textView object
+
+
+        Animation anim = new AlphaAnimation(0.0f, 1.0f);
+        anim.setDuration(10000);
+        anim.setStartOffset(10000);
+        anim.setRepeatMode(REVERSE);
+        anim.setRepeatCount(Animation.INFINITE);
+        obj.setAnimation(anim);
+    }
+
+    public void setBlinkingImage (ImageButton obj)  {  // to enable the blinking option on the selected image button object
+
+
+        Animation anim = new AlphaAnimation(0.0f, 1.0f);
+        anim.setDuration(500);
+        anim.setStartOffset(50);
+        anim.setRepeatMode(REVERSE);
+        anim.setRepeatCount(Animation.INFINITE);
+        obj.setAnimation(anim);
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -128,8 +186,11 @@ public class MainActivity extends Activity implements OnClickListener {
         btnRight =  findViewById(R.id.btnTurnRight);
         textStatus =  findViewById(R.id.textStatusBox);
         btImage =  findViewById(R.id.btnImage);
+        robotReadyStatus = findViewById(R.id.txtRobotONStatus);
         cameraSW =  findViewById(R.id.swCamera) ;
         btImage.setVisibility(View.INVISIBLE);
+        robotReadyStatus.setVisibility(View.INVISIBLE);
+
 
 //        btnForward.setOnClickListener(new OnClickListener() {
 //            @Override
@@ -138,22 +199,14 @@ public class MainActivity extends Activity implements OnClickListener {
 //            }
 //        });
 
-
-
 //        setButtonListener (btnForward, "F");  //move forward
 //        setButtonListener (btnReverse, "B");  // move reverse or backward
 //        setButtonListener (btnLeft, "L");  // move to the left
 //        setButtonListener (btnRight, "R");  //move to the right
 
-
-
-
-
 ////
 //        t1=(TextView)findViewById(R.id.textStatusBox);
         ///bluetooth_connect_device();
-
-
 
 //        i1=(Button)findViewById(R.id.btnForward);
 
@@ -166,68 +219,81 @@ public class MainActivity extends Activity implements OnClickListener {
 //                System.out.print("forward up\n");}
 //            return true;}
 //        });
-
     }
 
 
-    public void connectBluetooth(View v) throws IOException
-    {
+    @SuppressLint({"HardwareIds"})
+    public void connectBluetooth(View v) throws IOException {
 
-
-        try
-        {
-            myBluetooth = BluetoothAdapter.getDefaultAdapter();
-            if (!myBluetooth.isEnabled()){
-                Intent turnOn = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-                startActivityForResult(turnOn, 0);
-                Toast.makeText(getApplicationContext(), "BT is Turned on",Toast.LENGTH_LONG).show();
-            }
-
-            address = myBluetooth.getAddress();
+        myBluetooth = BluetoothAdapter.getDefaultAdapter();
+        System.out.println("bt_device_name " + myBluetooth);
+        if (myBluetooth == null)
+            Toast.makeText(getApplicationContext(), "The BT device is not detected or not compatible", Toast.LENGTH_SHORT).show();
+        else if (!myBluetooth.isEnabled()) {
+            Intent turnOn = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+            startActivityForResult(turnOn, 0);
+            Toast.makeText(getApplicationContext(), "BT is Turned on", Toast.LENGTH_LONG).show();
+        }else{
+            //address = myBluetooth.getAddress();
             pairedDevices = myBluetooth.getBondedDevices();
-            if (pairedDevices.size()>0)
-            {
-                for(BluetoothDevice bt : pairedDevices)
-                {
-                    address=bt.getAddress();
-                    name = bt.getName();
-                    Toast.makeText(getApplicationContext(),"Connected", Toast.LENGTH_SHORT).show();
-                    btImage.setVisibility(View.VISIBLE);
 
+            if (pairedDevices.size() > 0) {
+                for (BluetoothDevice bt : pairedDevices) {
+                    address = bt.getAddress();
+                    name = bt.getName();
                 }
             }
 
+            myBluetooth = BluetoothAdapter.getDefaultAdapter();//get the mobile bluetooth device
+            BluetoothDevice btDevice = myBluetooth.getRemoteDevice(address);//connects to the device's address and checks if it's available
+            btSocket = btDevice.createInsecureRfcommSocketToServiceRecord(myUUID);//create paired connection
+
+
+            new Handler().postDelayed(new Runnable() { // add a delay before connecting the bt socket to the paired device
+                @Override
+                public void run() {
+                    try {
+                        btSocket.connect();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            },500);
+
+            connectedMSG();
         }
-        catch(Exception we){}
-        //myBluetooth = BluetoothAdapter.getDefaultAdapter();//get the mobile bluetooth device
-        BluetoothDevice dispositivo = myBluetooth.getRemoteDevice(address);//connects to the device's address and checks if it's available
-        btSocket = dispositivo.createInsecureRfcommSocketToServiceRecord(myUUID);//create a RFCOMM (SPP) connection
-        btSocket.connect();
-        try { textStatus.setText("BT Name: "+name+"\nBT Address: "+address); }
-        catch(Exception e){}
+    }
+
+    @SuppressLint("SetTextI18n")
+    public void connectedMSG (){
+        Toast.makeText(getApplicationContext(), "Now connected to"+name, Toast.LENGTH_SHORT).show();
+        btImage.setVisibility(View.VISIBLE);
+        robotReadyStatus.setVisibility(View.VISIBLE);
+        setBlinkingImage(btImage);
+        textStatus.setText("BT Name: " + name + "\nBT Address: " + address);
     }
 
 
-
-
-    @SuppressLint("ClickableViewAccessibility")
-//    public void  setButtonListener(final Button btn, final String chr){
-//        btn.setOnTouchListener(new View.OnTouchListener() {
+//    @SuppressLint("ClickableViewAccessibility")
+//
+//    public void  setButtonListener(final Button btn, final String chr, final String msg){
+//
+//        btnForward.setOnTouchListener(new View.OnTouchListener() {
 //            @Override
 //            public boolean onTouch(View v, MotionEvent event) {
 //                if (event.getAction() == MotionEvent.ACTION_DOWN) {
 //                    setBtnStreamChar(chr);
-//                    System.out.println(btn.toString());
+//                    moveScreenStatus(msg);
+//
 //                }
 //                if (event.getAction() == MotionEvent.ACTION_UP) {
-//                    setBtnStreamChar("0");
-//                    System.out.println("robot stopped");
+//                    displayStopMSG();
 //                }
 //                return true;
 //            }});
 //        }
 
-   public void stopMSGDisplay(){
+   public void displayStopMSG(){
         setBtnStreamChar("0");
         System.out.println(msgStop);
         textStatus.setText(msgStop);
@@ -240,7 +306,10 @@ public class MainActivity extends Activity implements OnClickListener {
 
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     public void moveForward (View v){
+
+       // setButtonListener(btnForward, "F", msgForward);
 
         btnForward.setOnTouchListener(new View.OnTouchListener() {
             @Override
@@ -251,14 +320,17 @@ public class MainActivity extends Activity implements OnClickListener {
 
                 }
                 if (event.getAction() == MotionEvent.ACTION_UP) {
-                    stopMSGDisplay();
+                    displayStopMSG();
                 }
                 return true;
             }});
 
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     public void moveReverse (View v){
+
+       // setButtonListener(btnReverse, "R", msgBackward);
 
         btnReverse.setOnTouchListener(new View.OnTouchListener() {
             @Override
@@ -270,14 +342,18 @@ public class MainActivity extends Activity implements OnClickListener {
 
                 }
                 if (event.getAction() == MotionEvent.ACTION_UP) {
-                    stopMSGDisplay();
+                    displayStopMSG();
                 }
                 return true;
             }});
 
     }
 
+
+    @SuppressLint("ClickableViewAccessibility")
     public void turnLeft (View v){
+
+        //setButtonListener(btnLeft, "L", msgLeft);
 
         btnLeft.setOnTouchListener(new View.OnTouchListener() {
             @Override
@@ -288,15 +364,18 @@ public class MainActivity extends Activity implements OnClickListener {
 
                 }
                 if (event.getAction() == MotionEvent.ACTION_UP) {
-                    stopMSGDisplay();
+                    displayStopMSG();
                 }
                 return true;
             }});
 
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     public void turnRight (View v){
-        final String msgRight = "turning right";
+
+     //   setButtonListener(btnRight, "F", msgRight);
+
         btnRight.setOnTouchListener(new View.OnTouchListener() {
             @Override
 
@@ -307,7 +386,7 @@ public class MainActivity extends Activity implements OnClickListener {
 
                 }
                 if (event.getAction() == MotionEvent.ACTION_UP) {
-                    stopMSGDisplay();
+                    displayStopMSG();
                 }
                 return true;
             }});
@@ -344,18 +423,6 @@ public class MainActivity extends Activity implements OnClickListener {
         }
     }
 
-//    @Override
-//    public void onConfigurationChanged(Configuration newConfig) {
-//        super.onConfigurationChanged(newConfig);
-//
-//        // Checks the orientation of the screen
-//        if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
-//            Toast.makeText(this, "landscape", Toast.LENGTH_SHORT).show();
-//        } else if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT){
-//            Toast.makeText(this, "portrait", Toast.LENGTH_SHORT).show();
-//        }
-//    }
-
 
 //    public void btMenu(View v){
 //
@@ -371,9 +438,69 @@ public class MainActivity extends Activity implements OnClickListener {
         startActivity(intentSettings);
 
     }
+
+
 //    public void cameraSwitch(View v) {
-//        if (cameraSW.isChecked())
-//
-//
-//    }
-}
+//        if (cameraSW.isChecked()){
+//            cameraSW.setTextOff("Camera ON");
+//        }else{
+//            cameraSW.setTextOff("Camera OFF");
+//        }
+
+    public void sensorsSystemInitialize() {
+
+        final DecimalFormat numFormat = new DecimalFormat("#.##");
+        txtSensorOutput = findViewById(R.id.txtSensorOut);
+        sensorListener = new SensorEventListener() {
+
+            public void onSensorChanged(SensorEvent event) {
+
+                float[] values = event.values;
+                txtSensorOutput.setText("X:" + roundDecimalNum(values[0],numFormat) + "\n" + "Y:" + roundDecimalNum(values[1],numFormat) + "\n" + "Z:" + roundDecimalNum(values[2],numFormat));
+            }
+
+            public void onAccuracyChanged(Sensor sensor, int accuracy) {
+
+            }
+        };
+
+        mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+        sensor = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+        sensorList = mSensorManager.getSensorList(Sensor.TYPE_ACCELEROMETER);
+        if (sensorList.size() > 0)
+            mSensorManager.registerListener(sensorListener, (Sensor) sensorList.get(0), SensorManager.SENSOR_DELAY_NORMAL);
+        else
+            Toast.makeText(getApplicationContext(),"no accelerometer sensor detected",Toast.LENGTH_SHORT).show();
+
+    }
+
+
+    @Override
+    public void onSensorChanged(SensorEvent event) {
+    }
+
+
+    @Override
+    public void onAccuracyChanged(Sensor sensor, int accuracy) {
+
+    }
+
+    @Override
+    public void onStop() {
+        if (sensorList.size() > 0) {
+            mSensorManager.unregisterListener(sensorListener);
+        }
+        super.onStop();
+    }
+
+    public double roundDecimalNum(float num, DecimalFormat numFormat){  // to round the output number to the desired format
+//        DecimalFormat numFormat = new DecimalFormat("#.##");
+        return Double.valueOf(numFormat.format(num));
+    }
+
+
+
+    }
+
+
+
