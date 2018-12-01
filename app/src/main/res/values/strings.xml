@@ -14,4 +14,6 @@
     <string name="title_notifications">Notifications</string>
     <string name="bluetoothOff">Bluetooth OFF</string>
     <string name="front_msg">Rotate the phone to use all available options</string>
+    <string name="cameraOn">Camera ON</string>
+    <string name="cameraOFF">Camera OFF</string>
 </resources>
