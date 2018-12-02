@@ -1,5 +1,8 @@
 package com.stevensit.www.cpe556_interface_app;
 
+/*
+   creates the activity container to display the splash photo when start the app
+ */
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;

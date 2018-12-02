@@ -1,5 +1,11 @@
 package com.stevensit.www.cpe556_interface_app;
 
+
+/*
+
+contains all the objects of the settings sub menu that's assigned with SETTINGS button on the main app screen
+
+ */
 import android.annotation.SuppressLint;
 import android.content.DialogInterface;
 import android.os.Bundle;
@@ -13,11 +19,14 @@ import static com.stevensit.www.cpe556_interface_app.MainActivity.firstTimeRead;
 
 public class SettingMenu extends AppCompatActivity  {
 
+
+
     @SuppressLint("ResourceType")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.settings_menu);
+
     }
 
     public void settingMenu(View v){
@@ -51,6 +60,7 @@ public class SettingMenu extends AppCompatActivity  {
                         Toast.makeText(getApplicationContext(),"Calibration successful", Toast.LENGTH_SHORT).show();
                     }
                 });
+
         builder.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
@@ -60,4 +70,6 @@ public class SettingMenu extends AppCompatActivity  {
         AlertDialog dialog = builder.create();
         dialog.show();
     }
+
+
 }

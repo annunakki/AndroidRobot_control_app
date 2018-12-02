@@ -1,5 +1,19 @@
 package com.stevensit.www.cpe556_interface_app;
 
+/*
+ this is the main container of the app
+
+ Description:   This is an android phone app built using java language to control a ball robot (BB8)
+                it contains for direction buttons to control the movement of robot and also it uses
+                both gyroscope and accelerometer sensors to control the speed and movement direction
+                of a 2-axis small arduino camera mounted on e top of the robot then stream camera's
+                real time recording on the control app interface. Bluetooth is used to connect the robot
+                to the app.
+
+
+ the main activity class includes the necessary functions to define sensors, buttons , textView, resetConfigurations
+ also all the necessary output forms of the measured data
+ */
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
@@ -28,7 +42,6 @@ import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.VideoView;
-
 import java.io.IOException;
 import java.io.OutputStream;
 import java.text.DecimalFormat;
@@ -39,12 +52,7 @@ import static android.view.animation.Animation.REVERSE;
 
 public class MainActivity extends Activity implements OnClickListener, SensorEventListener {
 
-    private String address = null , name=null;
-    private BluetoothAdapter myBluetooth = null;
-    private BluetoothSocket btSocket = null;
-    private OutputStream btOutputStream=null;
-    private Set<BluetoothDevice> pairedDevices;
-    static final UUID myUUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
+
     private Button btnSettings, btnBTConnect, btnForward, btnReverse, btnLeft, btnRight, btnCameraCenter, btnCalibrateGyro;
     public TextView screenStatusDisplay,blinkText,robotReadyStatus;
     private Switch cameraSW;
@@ -59,8 +67,8 @@ public class MainActivity extends Activity implements OnClickListener, SensorEve
 
     //=======sensors segment ========
 
-    private SensorManager mSensorManager;
-    public  Sensor snsAccelerometer, snsGyroscopeVector;
+    public static SensorManager mSensorManager;
+    public  static Sensor snsAccelerometer, snsGyroscopeVector;
     private TextView txtAccelSensorOut, txtGyroSensorOut;
     private float [] rotationMatrix = new float[9];
     private float [] orientationValues = new float[3];
@@ -140,6 +148,8 @@ public class MainActivity extends Activity implements OnClickListener, SensorEve
         robotReadyStatus.setVisibility(View.INVISIBLE);
         btImage.setActivated(false);
         viewCameraWindow = findViewById(R.id.videoView);
+        txtGyroSensorOut = findViewById(R.id.txtGyroSensorOut);
+        txtAccelSensorOut = findViewById(R.id.txtAccelSensorOut);
 
 
 //        btnForward.setOnClickListener(new OnClickListener() {
@@ -172,6 +182,9 @@ public class MainActivity extends Activity implements OnClickListener, SensorEve
     }
 
     boolean btConnectionStatus = false;
+    private String name=null;
+    private BluetoothSocket btSocket = null;
+    static final UUID myUUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
 
     @SuppressLint({"HardwareIds"})
     public void connectBluetooth(View v) throws IOException {  // bluetooth connection handler
@@ -181,7 +194,7 @@ public class MainActivity extends Activity implements OnClickListener, SensorEve
         showToastMSG("Information Message:", "BT is already paired");
     }else {
 
-            myBluetooth = BluetoothAdapter.getDefaultAdapter();
+            BluetoothAdapter myBluetooth = BluetoothAdapter.getDefaultAdapter();
             System.out.println("msg: "+"bt_device_name " + myBluetooth);
             if (myBluetooth == null)
                 Toast.makeText(getApplicationContext(), "The BT device is not detected or not compatible", Toast.LENGTH_SHORT).show();
@@ -190,8 +203,8 @@ public class MainActivity extends Activity implements OnClickListener, SensorEve
                 startActivityForResult(turnOn, 0);
                 Toast.makeText(getApplicationContext(), "BT is Turned on", Toast.LENGTH_LONG).show();
             } else {
-                address = myBluetooth.getAddress();
-                pairedDevices = myBluetooth.getBondedDevices();
+                String address = myBluetooth.getAddress();
+                Set<BluetoothDevice> pairedDevices = myBluetooth.getBondedDevices();
 
                 if (pairedDevices.size() > 0) {
                     for (BluetoothDevice bt : pairedDevices) {
@@ -230,8 +243,8 @@ public class MainActivity extends Activity implements OnClickListener, SensorEve
 
     private void sendToBtStream (String streamChr){  // send the selected output to bluetooth output socket
         try{
-            btOutputStream =btSocket.getOutputStream();
-            if (!streamChr.isEmpty() && btOutputStream!=null){
+            OutputStream btOutputStream = btSocket.getOutputStream();
+            if (!streamChr.isEmpty() && btOutputStream !=null){
                 btOutputStream.write(streamChr.getBytes());
                 System.out.println("msg: "+streamChr);
                 System.out.println("msg: "+"bt socket current output: "+btSocket.toString());
@@ -351,6 +364,7 @@ public class MainActivity extends Activity implements OnClickListener, SensorEve
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
                     sendToBtStream("B");
                     displayMoveStatus(msgBackward);
+
                 }
                 if (event.getAction() == MotionEvent.ACTION_UP) {
                     displayStopMSG();
@@ -440,7 +454,6 @@ public class MainActivity extends Activity implements OnClickListener, SensorEve
         }
     }
 
-
     @SuppressLint("ClickableViewAccessibility")
     public void setCameraToCenter(View v){
 
@@ -449,18 +462,18 @@ public class MainActivity extends Activity implements OnClickListener, SensorEve
         System.out.println("msg: camera set to center pos");
     }
 
-    public void sensorsSystemInitialize() { //initialize and register the selected sensors
 
-        txtGyroSensorOut = findViewById(R.id.txtGyroSensorOut);
-        txtAccelSensorOut = findViewById(R.id.txtAccelSensorOut);
+    public void sensorsSystemInitialize() { //initialize and register the selected sensors
 
         mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
 
         snsAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION);
-        snsGyroscopeVector = mSensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR);
+        snsGyroscopeVector = mSensorManager.getDefaultSensor(Sensor.TYPE_GAME_ROTATION_VECTOR);
 
         registerTheSensorsListeners();
     }
+
+
 
     public void registerTheSensorsListeners(){
         if (snsAccelerometer!=null )
@@ -500,7 +513,7 @@ public class MainActivity extends Activity implements OnClickListener, SensorEve
 
             if (sensorOut) {
                 encodeBTStream(accelValues[0], accelValues[1], gyroValues[0], gyroValues[1]);
-                txtAccelSensorOut.setText("Accel m/s2\n" +
+                txtAccelSensorOut.setText("Accel m/s^2\n" +
                         accelValues[0].first+ accelValues[0].second+"\n"+
                         accelValues[1].first+accelValues[1].second+"\n");
 
@@ -538,58 +551,62 @@ public class MainActivity extends Activity implements OnClickListener, SensorEve
         sendToBtStream(btMessage.toString());
     }
 
-    double accel_X, accel_Y;
+    float accel_X, accel_Y;
 
     public Pair[] readAccelerometerSensor (SensorEvent event) { // reads and calculates the output of the accelerometer sensor after the event occurrence
 
-        float[] value = event.values;
-        accel_X= roundDecimalNum(value[0]*10);
-        accel_Y = roundDecimalNum(value[1]*10);
-       // double z = roundDecimalNum(value[2]);
+        //System.arraycopy(event.values,0,accelEventValues,0,3);
+//        SensorManager.getRotationMatrix(rotationMatrix,null,event.values,null);
+//        SensorManager.getOrientation(rotationMatrix,orientationValues);
+//        accel_X = orientationValues[0];
+//        accel_Y= orientationValues[1];
 
-//        if (sensorOut) {
-//            encodeBTStream(x, y, z);
-//            txtAccelSensorOut.setText("Accel m/s2\n" + "X:" + x + "\n" + "Y:" + y + "\n" + "Z:" + z);
-//        }
+        accel_X= roundDecimalNum(event.values[0]);
+        accel_Y = roundDecimalNum(event.values[1]);
+
         return new Pair[] {new Pair<>("axis_X: ", accel_X), new Pair<>("axis_Y: ",accel_Y)};
     }
 
 
     public static boolean firstTimeRead=  true;
-    double pitchValueSet=0 , rollValueSet=0, roll, pitch; // x = pitch ,, y = roll
-    int scale=10;
-    String pattern = "#.#";
+    float pitchValueOffset=0 , rollValueOffset=0, roll=0, pitch=0; // x = pitch ,, y = roll
+    String pattern = "#.##";
 
     public Pair[] readGyroSensor (SensorEvent event) {  // reads and calculate the output of the gyroscope and vector rotation sensor after the event occurrence
 
-        SensorManager.getRotationMatrixFromVector(rotationMatrix, event.values);
-        SensorManager.remapCoordinateSystem(rotationMatrix, SensorManager.AXIS_X, SensorManager.AXIS_Z, rotationMatrix);
-        SensorManager.getOrientation(rotationMatrix, orientationValues);
+       // System.arraycopy(event.values,0,gyroEventValues,0,3);
+      SensorManager.getRotationMatrixFromVector(rotationMatrix, event.values);
+      SensorManager.remapCoordinateSystem(rotationMatrix, SensorManager.AXIS_X, SensorManager.AXIS_Z, rotationMatrix);
+      SensorManager.getOrientation(rotationMatrix, orientationValues);
 
-//      double azimuth = Math.toDegrees(orientationValues[0]);
 //      double pitch = Math.toDegrees(orientationValues[1]);
-//      double roll = Math.toDegrees(orientationValues[2]);
+//      double roll = Math.toDegrees(orientationValues[0]);
 
+        if (firstTimeRead){
+            rollValueOffset = orientationValues[0];
+            pitchValueOffset = orientationValues[1];
+
+            firstTimeRead=false;
+        }
+
+        roll = roundDecimalNum(orientationValues[0]-rollValueOffset); // y asix rotation
+        pitch = - roundDecimalNum(orientationValues[1]-pitchValueOffset);  // x axis rotation
+
+
+
+/////=================================== raw data readings=====
 //        if (firstTimeRead){
-//            yawValueSet = orientationValues[0];
-//            pitchValueSet = orientationValues[1];
+//            pitchValueOffset = event.values[0];
+//            rollValueOffset = event.values[1];
 //            firstTimeRead=false;
 //        }
+//
+//        pitch = - roundDecimalNum(event.values[0]-pitchValueOffset) ;  // the minus sign is to invert the angle direction in regards with the phone movement
+//        roll= roundDecimalNum(event.values[1]-rollValueOffset) ;
 
-        pitch = roundDecimalNum(orientationValues[0]-rollValueSet);  // x axis rotation
-        roll = roundDecimalNum(orientationValues[1]-pitchValueSet); // y asix rotation
-       // double yaw = roundDecimalNum(orientationValues[2]); // z axis rotation
-
-//      double x = roundDecimalNum(roll);
-//      double y = roundDecimalNum(pitch);
-//      double z = roundDecimalNum(yaw);
-
-//       if (sensorOut) {
-//           encodeBTStream(tagGyro, x,y,z);
-//           txtGyroSensorOut.setText("Gyro deg\n" + "X:" + x + "\n" + "Y:" + y + "\n" + "Z:" + z);
-//       }
 
         return new Pair[]{new Pair<>("pitch: ", pitch), new Pair<>("roll: ", roll)};
+
     }
 
     @Override
@@ -608,10 +625,15 @@ public class MainActivity extends Activity implements OnClickListener, SensorEve
         super.onResume();
     }
 
-    public double roundDecimalNum(double num){  // to round the output number to the desired format
-       DecimalFormat numFormat = new DecimalFormat(pattern);
-        return scale*Double.valueOf(numFormat.format(num));
+    public float roundDecimalNum(float num){  // to round the output number to the desired format
+        DecimalFormat numFormat = new DecimalFormat(pattern);
+        return Float.valueOf(numFormat.format(num));
     }
+
+//    public int roundNum(double num){  // to round the output number to the desired format
+//       // DecimalFormat numFormat = new DecimalFormat(pattern);
+//        return (int) num;
+//    }
 
     }
 
