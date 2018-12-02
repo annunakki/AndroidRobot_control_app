@@ -8,6 +8,7 @@ contains all the objects of the settings sub menu that's assigned with SETTINGS 
  */
 import android.annotation.SuppressLint;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v7.app.AlertDialog;
@@ -39,7 +40,7 @@ public class SettingMenu extends AppCompatActivity  {
         builder.setCancelable(true);
         builder.setIcon(android.R.drawable.ic_dialog_alert);
         builder.setTitle("Confirmation Message");
-        builder.setMessage("Please hold the phone on the desired orientation then press calibrate to processed with the calibration process");
+        builder.setMessage("This will set the gyroscope sensor to zero position\n \nPlease hold the phone in the desired orientation then press calibrate to processed with the calibration process");
         builder.setPositiveButton("Calibrate",
                 new DialogInterface.OnClickListener() {
                     @Override
@@ -69,6 +70,12 @@ public class SettingMenu extends AppCompatActivity  {
 
         AlertDialog dialog = builder.create();
         dialog.show();
+    }
+
+    public void aboutMenu(View v){
+        Intent intentSettings = new Intent(this,AboutMenu.class);
+        startActivity(intentSettings);
+
     }
 
 

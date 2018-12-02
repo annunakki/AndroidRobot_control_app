@@ -35,6 +35,7 @@
         </activity>
 
         <activity android:name=".SettingMenu" />
+        <activity android:name=".AboutMenu"/>
         <!--<activity android:name=".SensorsSystem"/>-->
             </application>
 

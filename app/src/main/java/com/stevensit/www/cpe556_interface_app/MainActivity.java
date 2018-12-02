@@ -42,6 +42,7 @@ import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.VideoView;
+
 import java.io.IOException;
 import java.io.OutputStream;
 import java.text.DecimalFormat;
@@ -53,10 +54,17 @@ import static android.view.animation.Animation.REVERSE;
 public class MainActivity extends Activity implements OnClickListener, SensorEventListener {
 
 
-    private Button btnSettings, btnBTConnect, btnForward, btnReverse, btnLeft, btnRight, btnCameraCenter, btnCalibrateGyro;
+    private Button btnSettings;
+    private Button btnBTConnect;
+    protected Button btnForward;
+    protected Button btnReverse;
+    protected Button btnLeft;
+    protected Button btnRight;
+    private Button btnCameraCenter;
+    private Button btnCalibrateGyro;
     public TextView screenStatusDisplay,blinkText,robotReadyStatus;
-    private Switch cameraSW;
-    private VideoView viewCameraWindow;
+    protected Switch cameraSW;
+    protected VideoView viewCameraWindow;
     private ImageButton btImage;
     public final String msgForward = "MOVING FORWARD";
     public  final String msgStop = "ROBOT STOPPED";
@@ -241,7 +249,7 @@ public class MainActivity extends Activity implements OnClickListener, SensorEve
         }
     }
 
-    private void sendToBtStream (String streamChr){  // send the selected output to bluetooth output socket
+    public void sendToBtStream(String streamChr){  // send the selected output to bluetooth output socket
         try{
             OutputStream btOutputStream = btSocket.getOutputStream();
             if (!streamChr.isEmpty() && btOutputStream !=null){
@@ -283,7 +291,7 @@ public class MainActivity extends Activity implements OnClickListener, SensorEve
 
     @SuppressLint("SetTextI18n")
     public void btConnectedMSG (){  // display bluetooth connection messages and set the indicators
-        Toast.makeText(getApplicationContext(), "Now connected to"+name, Toast.LENGTH_SHORT).show();
+        Toast.makeText(getApplicationContext(), "Now connected to: "+name, Toast.LENGTH_SHORT).show();
         btImage.setVisibility(View.VISIBLE);
         robotReadyStatus.setVisibility(View.VISIBLE);
         btImage.setActivated(true);
@@ -583,14 +591,14 @@ public class MainActivity extends Activity implements OnClickListener, SensorEve
 //      double roll = Math.toDegrees(orientationValues[0]);
 
         if (firstTimeRead){
-            rollValueOffset = orientationValues[0];
-            pitchValueOffset = orientationValues[1];
+            rollValueOffset = orientationValues[1];
+            pitchValueOffset = orientationValues[0];
 
             firstTimeRead=false;
         }
 
-        roll = roundDecimalNum(orientationValues[0]-rollValueOffset); // y asix rotation
-        pitch = - roundDecimalNum(orientationValues[1]-pitchValueOffset);  // x axis rotation
+        roll = - roundDecimalNum(orientationValues[1]-rollValueOffset); // x asix rotation
+        pitch = roundDecimalNum(orientationValues[0]-pitchValueOffset);  // y axis rotation
 
 
 
@@ -605,7 +613,7 @@ public class MainActivity extends Activity implements OnClickListener, SensorEve
 //        roll= roundDecimalNum(event.values[1]-rollValueOffset) ;
 
 
-        return new Pair[]{new Pair<>("pitch: ", pitch), new Pair<>("roll: ", roll)};
+        return new Pair[]{ new Pair<>("Roll: ", roll), new Pair<>("Pitch: ", pitch)};
 
     }
 
@@ -630,13 +638,114 @@ public class MainActivity extends Activity implements OnClickListener, SensorEve
         return Float.valueOf(numFormat.format(num));
     }
 
-//    public int roundNum(double num){  // to round the output number to the desired format
-//       // DecimalFormat numFormat = new DecimalFormat(pattern);
-//        return (int) num;
+    }
+
+//    //======================================================================================================================
+///*
+//All buttons functions are included here
+// */
+//
+//    @SuppressLint("Registered")
+//    class ButtonsFunctions extends MainActivity{
+//
+//        @SuppressLint("ClickableViewAccessibility")
+//        public void moveForward (View v){  // move forward command
+//            // setButtonListener(btnForward, "F", msgForward);
+//            v.setOnTouchListener(new View.OnTouchListener() {
+//                @Override
+//                public boolean onTouch(View v, MotionEvent event) {
+//                    if (event.getAction() == MotionEvent.ACTION_DOWN) {
+//                        sendToBtStream("F");
+//                        displayMoveStatus(msgForward);
+//                    }
+//                    if (event.getAction() == MotionEvent.ACTION_UP) {
+//                        displayStopMSG();
+//                    }
+//                    return true;
+//                }});
+//        }
+//
+//        public void cameraSwitch(View v) {
+//            if (cameraSW.isChecked()) {
+//                //cameraSW.setTextOff("Camera ON");
+//                cameraSW.setText("Camera ON");
+//                sensorOut = true;
+//                screenStatusDisplay.setText("Camera is activated");
+//                viewCameraWindow.setVisibility(View.VISIBLE);
+//
+//            } else {
+//                //cameraSW.setTextOff("Camera OFF");
+//                cameraSW.setText("Camera OFF");
+//                sensorOut = false;
+//                screenStatusDisplay.setText("Camera is deactivated");
+//                viewCameraWindow.setVisibility(View.INVISIBLE);
+//            }
+//        }
+//
+//        @SuppressLint("ClickableViewAccessibility")
+//        public void moveReverse (View v){  // move in reverse command
+//            // setButtonListener(btnReverse, "R", msgBackward);
+//            v.setOnTouchListener(new View.OnTouchListener() {
+//                @Override
+//                public boolean onTouch(View v, MotionEvent event) {
+//
+//                    if (event.getAction() == MotionEvent.ACTION_DOWN) {
+//                        sendToBtStream("B");
+//                        displayMoveStatus(msgBackward);
+//
+//                    }
+//                    if (event.getAction() == MotionEvent.ACTION_UP) {
+//                        displayStopMSG();
+//                    }
+//                    return true;
+//                }});
+//        }
+//
+//        @SuppressLint("ClickableViewAccessibility")
+//        public void turnLeft (View v){ // turn to the left command
+//
+//            //setButtonListener(btnLeft, "L", msgLeft);
+//
+//            v.setOnTouchListener(new View.OnTouchListener() {
+//                @Override
+//                public boolean onTouch(View v, MotionEvent event) {
+//                    if (event.getAction() == MotionEvent.ACTION_DOWN) {
+//                        sendToBtStream("L");
+//                        displayMoveStatus(msgLeft);
+//
+//                    }
+//                    if (event.getAction() == MotionEvent.ACTION_UP) {
+//                        displayStopMSG();
+//                    }
+//                    return true;
+//                }});
+//        }
+//
+//        @SuppressLint("ClickableViewAccessibility")
+//        public void turnRight (View v){   // turn to the right command
+//
+//            //   setButtonListener(btnRight, "F", msgRight);
+//
+//            v.setOnTouchListener(new View.OnTouchListener() {
+//                @Override
+//
+//                public boolean onTouch(View v, MotionEvent event) {
+//                    if (event.getAction() == MotionEvent.ACTION_DOWN) {
+//                        sendToBtStream("R");
+//                        displayMoveStatus(msgRight);
+//                    }
+//                    if (event.getAction() == MotionEvent.ACTION_UP) {
+//                        displayStopMSG();
+//                    }
+//                    return true;
+//                }});
+//        }
+//
+//
+//
+//
+//
+//
+//
+//
 //    }
-
-    }
-
-    @SuppressLint("Registered")
-    class ButtonsFunctions extends MainActivity{
-    }

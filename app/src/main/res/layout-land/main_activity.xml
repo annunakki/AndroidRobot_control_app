@@ -5,7 +5,7 @@
     android:id="@+id/mainMenu"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/doid_background_small"
+    android:background="@drawable/droid_background_small"
     tools:ignore="MissingDefaultResource">
 
     <Button
@@ -18,8 +18,8 @@
         android:clickable="true"
         android:focusable="true"
         android:focusableInTouchMode="true"
-        android:onClick="moveForward"
         android:visibility="visible"
+        android:onClick="moveForward"
         app:layout_constraintBottom_toTopOf="@+id/btnReverse"
         app:layout_constraintEnd_toEndOf="parent" />
 
@@ -31,9 +31,9 @@
         android:layout_marginBottom="12dp"
         android:background="@drawable/round_button"
         android:clickable="true"
-        android:onClick="moveReverse"
         android:visibility="visible"
         android:focusable="true"
+        android:onClick="moveReverse"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
@@ -45,9 +45,9 @@
         android:layout_marginBottom="64dp"
         android:background="@drawable/round_button"
         android:clickable="true"
-        android:onClick="turnLeft"
         android:visibility="visible"
         android:focusable="true"
+        android:onClick="turnLeft"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/btnTurnRight" />
 
@@ -60,8 +60,8 @@
         android:background="@drawable/round_button"
         android:clickable="true"
         android:focusable="true"
-        android:onClick="turnRight"
         android:visibility="visible"
+        android:onClick="turnRight"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
@@ -133,7 +133,7 @@
         android:clickable="true"
         android:focusable="true"
         android:onClick="connectBluetooth"
-        android:text="Connect to Bluetooth"
+        android:text="Connect to T3I Robot"
         android:visibility="visible"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/videoView"
