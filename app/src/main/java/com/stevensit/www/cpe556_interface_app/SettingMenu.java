@@ -6,6 +6,7 @@ package com.stevensit.www.cpe556_interface_app;
 contains all the objects of the settings sub menu that's assigned with SETTINGS button on the main app screen
 
  */
+
 import android.annotation.SuppressLint;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -24,11 +25,12 @@ public class SettingMenu extends AppCompatActivity  {
 
     @SuppressLint("ResourceType")
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState)  {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.settings_menu);
+       }
 
-    }
+
 
     public void settingMenu(View v){
 
@@ -77,6 +79,7 @@ public class SettingMenu extends AppCompatActivity  {
         startActivity(intentSettings);
 
     }
+
 
 
 }

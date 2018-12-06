@@ -34,9 +34,13 @@
             <!--</intent-filter>-->
         </activity>
 
-        <activity android:name=".SettingMenu" />
-        <activity android:name=".AboutMenu"/>
+        <activity android:name=".SettingMenu"
+            android:screenOrientation="landscape"/>
+        <activity android:name=".AboutMenu"
+            android:screenOrientation="landscape"/>
+        <!--<activity android:name=".BTControl"/>-->
         <!--<activity android:name=".SensorsSystem"/>-->
+
             </application>
 
 </manifest>
