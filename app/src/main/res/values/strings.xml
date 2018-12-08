@@ -16,4 +16,5 @@
     <string name="front_msg">Rotate the phone to use all available options</string>
     <string name="cameraOn">Camera ON</string>
     <string name="cameraOFF">Camera OFF</string>
+    <string name="camera_view">cameraViewWindow</string>
 </resources>

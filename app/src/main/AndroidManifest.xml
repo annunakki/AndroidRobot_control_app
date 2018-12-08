@@ -18,8 +18,7 @@
         tools:ignore="GoogleAppIndexingWarning"
         android:fullBackupContent="true">
         
-        <activity android:name=".SplashActivity" android:theme="@style/SplashTheme"
-            android:configChanges="orientation | screenSize">
+        <activity android:name=".SplashActivity" android:theme="@style/SplashTheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
@@ -28,18 +27,16 @@
 
         <activity android:name=".MainActivity"
                   android:screenOrientation="landscape">
-            <!--<intent-filter>-->
-                <!--<action android:name="android.intent.action.MAIN" />-->
-                <!--<category android:name="android.intent.category.LAUNCHER" />-->
-            <!--</intent-filter>-->
         </activity>
 
         <activity android:name=".SettingMenu"
             android:screenOrientation="landscape"/>
+
         <activity android:name=".AboutMenu"
             android:screenOrientation="landscape"/>
-        <!--<activity android:name=".BTControl"/>-->
-        <!--<activity android:name=".SensorsSystem"/>-->
+
+        <activity android:name=".HelpMenu"
+            android:screenOrientation="landscape"/>
 
             </application>
 
