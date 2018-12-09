@@ -17,6 +17,10 @@ package com.stevensit.www.cpe556_interface_app;
    *************
  NOTE >>>: the code body below is virtually divided into segments for faster troubleshooting and code clearance
     also some parts of the code are commented out because is not tested yet or may be used for the future options upgrade.
+
+    also in case the keeps crashing because the value cast issue even the cimpiler doesnt show any errors, uninstall the app
+    from the phone before uploading new one
+
  *****************
  *
  *
@@ -124,8 +128,9 @@ public class MainActivity extends Activity implements OnClickListener, SensorEve
     private TextView txtAccelSensorOut, txtGyroSensorOut;
     private float[] rotationMatrix = new float[9];
     private float[] orientationValues = new float[3];
-    private int sensorReadyDelay = 100000000;//default value = SensorManager.SENSOR_DELAY_UI; // set the ready intervals for the sensors
-    private int sensorLatency = 100000000;
+    public static int sensorDelay ;
+//    private int sensorReadyDelay = 100000000;//default value = SensorManager.SENSOR_DELAY_UI; // set the ready intervals for the sensors
+//    private int sensorLatency = 100000000;
     public static  AppReferences sharedPref;
 
 
@@ -140,7 +145,7 @@ public class MainActivity extends Activity implements OnClickListener, SensorEve
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main_activity);
 
-        readPrefValues();
+        loadPrefValues();
         // System.out.println("current orientation "+getResources().getConfiguration().orientation);
         try {
             initialize(); // define all the objects on the app screen
@@ -152,18 +157,24 @@ public class MainActivity extends Activity implements OnClickListener, SensorEve
 
     @Override
     public void onBackPressed() { // to kill the background process of the app after pressing back button
-        sharedPref.saveValue("roll", gyroRoll_Threshold);
-        sharedPref.saveValue("pitch",gyroPitch_Threshold);
-
+        savePrefValues();
         android.os.Process.killProcess(Process.myPid());
     }
 
-    public void readPrefValues(){
+    public void loadPrefValues(){
         sharedPref = new AppReferences(getApplicationContext());
-        gyroRoll_Threshold= sharedPref.getValue("roll");
+        gyroRoll_Threshold = sharedPref.getValue("roll");
         gyroPitch_Threshold = sharedPref.getValue("pitch");
-        checkBoxChecked=false;
+        sensorDelay = sharedPref.getInt("delay");
 
+        checkBoxChecked=false;
+    }
+
+    private void savePrefValues(){
+
+        sharedPref.saveValue("roll", gyroRoll_Threshold);
+        sharedPref.saveValue("pitch",gyroPitch_Threshold);
+        sharedPref.saveIntValue("delay",sensorDelay);
     }
 
     @Override
@@ -661,16 +672,8 @@ public void moveForward(View v) {  // move forward command
      * not utilized yet
      */
 
-    public void onPause() {
-
-//        SharedPreferences sharedPref = getApplicationContext().getSharedPreferences("prefXML.xml", Context.MODE_PRIVATE);
-//        SharedPreferences.Editor prefEditor = sharedPref.edit();
-//        prefEditor.putFloat("roll", gyroPitch_Threshold);
-//        prefEditor.putFloat("pitch", gyroRoll_Threshold);
-//        prefEditor.apply();
-//        System.out.println("stored the values"+gyroRoll_Threshold+" ||"+gyroPitch_Threshold);
-        sharedPref.saveValue("pitch", gyroPitch_Threshold);
-        sharedPref.saveValue("roll", gyroRoll_Threshold);
+    public void onPause(){
+        savePrefValues();
 
         if (btOutputStream != null) {
             try {
@@ -684,10 +687,7 @@ public void moveForward(View v) {  // move forward command
 
     @Override
     public void onResume() {
-//        SharedPreferences sharedPref = getApplicationContext().getSharedPreferences("prefXML.xml", Context.MODE_PRIVATE);
-        gyroRoll_Threshold = sharedPref.getValue("roll");
-        gyroPitch_Threshold = sharedPref.getValue("pitch");
-        System.out.println("resumed the values"+gyroRoll_Threshold+" ||"+gyroPitch_Threshold);
+        loadPrefValues();
 
         registerTheSensorsListeners();
         super.onResume();
@@ -773,7 +773,6 @@ public void moveForward(View v) {  // move forward command
     public void sensorsSystemInitialize() { //initialize and register the selected sensors
 
         mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
-
         snsAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION);
         snsGyroscopeVector = mSensorManager.getDefaultSensor(Sensor.TYPE_GAME_ROTATION_VECTOR);
 
@@ -782,19 +781,21 @@ public void moveForward(View v) {  // move forward command
 
 
     public void registerTheSensorsListeners() {
+        int sensorLatency = sensorDelay;
+
         if (snsAccelerometer != null)
-            mSensorManager.registerListener(this, snsAccelerometer, sensorReadyDelay, sensorLatency);
+            mSensorManager.registerListener(this, snsAccelerometer, sensorDelay, sensorLatency);
         else
             Toast.makeText(getApplicationContext(), "no accelerometer sensor detected", Toast.LENGTH_SHORT).show();
 
         if (snsGyroscopeVector != null)
-            mSensorManager.registerListener(this, snsGyroscopeVector, sensorReadyDelay, sensorLatency);
+            mSensorManager.registerListener(this, snsGyroscopeVector, sensorDelay, sensorLatency);
         else
             Toast.makeText(getApplicationContext(), "no gyroscope sensor detected", Toast.LENGTH_SHORT).show();
     }
 
 
-    boolean sensorOut = false; // it's connected with camera view switch to activate the sensors readings when it's true
+    boolean sensorOut = false; // it's included in camera view switch to activate the sensors readings when it's true
 
     /**
      * sensors events change listen service
@@ -863,6 +864,7 @@ public void moveForward(View v) {  // move forward command
             gyroRoll = (float) gyroValues[1].second;
             System.out.print("pitch: "+gyroRoll);
             System.out.print("|| Threshold: "+gyroPitch_Threshold+" <> "+gyroRoll_Threshold);
+            System.out.print("  || sensor delay: "+sensorDelay);
             System.out.println("  || sensor output "+checkBoxChecked);
             msgCounter++;
 
@@ -887,7 +889,7 @@ public void moveForward(View v) {  // move forward command
     String stopCharacter = "p";
     public static Pair[] accelValues, gyroValues;
 
-    public static boolean firstTimeRead = true;
+    public static boolean sensorFirstTimeRead = false; // sets the calibration position
     float pitchValueOffset = 0, rollValueOffset = 0, roll = 0, pitch = 0; // x = pitch ,, y = roll
     String pattern = "#.##";
 
@@ -918,13 +920,13 @@ public void moveForward(View v) {  // move forward command
 //      double pitch = Math.toDegrees(orientationValues[1]);
 //      double roll = Math.toDegrees(orientationValues[0]);
 
-        if (firstTimeRead) {
+        if (sensorFirstTimeRead) {
 //            rollValueOffset = (float)Math.toDegrees(orientationValues[1]);
 //            pitchValueOffset = (float)Math.toDegrees(orientationValues[0]);
             rollValueOffset = (orientationValues[1]);
             pitchValueOffset = (orientationValues[0]);
 
-            firstTimeRead = false;
+            sensorFirstTimeRead = false;
         }
 
         pitch = -roundDecimalNum((float)Math.toDegrees(orientationValues[1] - rollValueOffset)); // x asix rotation

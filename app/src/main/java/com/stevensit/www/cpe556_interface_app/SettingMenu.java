@@ -24,14 +24,15 @@ import android.widget.Toast;
 
 import static com.stevensit.www.cpe556_interface_app.MainActivity.btConnectionStatus;
 import static com.stevensit.www.cpe556_interface_app.MainActivity.checkBoxChecked;
-import static com.stevensit.www.cpe556_interface_app.MainActivity.firstTimeRead;
+import static com.stevensit.www.cpe556_interface_app.MainActivity.sensorDelay;
+import static com.stevensit.www.cpe556_interface_app.MainActivity.sensorFirstTimeRead;
 import static com.stevensit.www.cpe556_interface_app.MainActivity.gyroPitch_Threshold;
 import static com.stevensit.www.cpe556_interface_app.MainActivity.gyroRoll_Threshold;
 import static com.stevensit.www.cpe556_interface_app.MainActivity.sharedPref;
 
 public class SettingMenu extends AppCompatActivity {
 
-    public EditText editGyroPitchThresh, editGyroRollThresh;
+    public EditText editGyroPitchThresh, editGyroRollThresh, editSensorDelay;
     protected CheckBox cbSensorsOut;
 
     private int maxVal = 50; // the max allowed value for the threshold output
@@ -44,12 +45,14 @@ public class SettingMenu extends AppCompatActivity {
         setContentView(R.layout.settings_menu);
         editGyroRollThresh = findViewById(R.id.editRollThreshold);
         editGyroPitchThresh = findViewById(R.id.editPitchThreshold);
-        editGyroPitchThresh.setHint(String.valueOf(gyroPitch_Threshold));
-        editGyroRollThresh.setHint(String.valueOf(gyroRoll_Threshold));
+        editSensorDelay=findViewById(R.id.editSensorDelay);
         cbSensorsOut = findViewById(R.id.checkBoxSensors);
 
-        cbSensorsOut.setChecked(checkBoxChecked);
+        editGyroPitchThresh.setHint(String.valueOf((int)gyroPitch_Threshold));
+        editGyroRollThresh.setHint(String.valueOf((int)gyroRoll_Threshold));
+        editSensorDelay.setHint(String.valueOf(sensorDelay));
 
+        cbSensorsOut.setChecked(checkBoxChecked);
         setTextListeners();
     }
 
@@ -83,14 +86,8 @@ public class SettingMenu extends AppCompatActivity {
 
                 try {
 
-                    if (tempVal > 50) {
+                    if (tempVal > maxVal) {
                         text.replace(0, text.length(), String.valueOf(maxVal), 0, 2);
-
-//                    } else if(tempVal < 0) {
-//                        text.replace(0, text.length(), String.valueOf(minVal), 0, 1);
-//                        System.out.println("the entered value is less than 0");
-                        //  Toast.makeText(getApplicationContext(),"min value is: "+minVal,Toast.LENGTH_SHORT).show();
-                        //  tempVal=minVal;
                     }
                 } catch (NumberFormatException ex) {
                 }
@@ -105,12 +102,10 @@ public class SettingMenu extends AppCompatActivity {
         editGyroRollThresh.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
             }
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-
             }
 
             @Override
@@ -119,28 +114,60 @@ public class SettingMenu extends AppCompatActivity {
                 float tempVal;
 
                 if (text.toString().equals(null) || text.toString().equals("")) {
-
                     tempVal = 0;
-                    Toast.makeText(getApplicationContext(), String.valueOf(tempVal), Toast.LENGTH_SHORT).show();
                 } else {
                     tempVal = Float.valueOf(text.toString());
                 }
 
 
                 try {
-                    if (tempVal > 50) {
+                    if (tempVal > maxVal) {
                         text.replace(0, text.length(), String.valueOf(maxVal), 0, 2);
-                        // Toast.makeText(getApplicationContext(), "max value is: " + maxVal, Toast.LENGTH_SHORT).show();
-//                    } else if (tempVal < 0) {
-//                          text.replace(0, text.length(), "0", 0, 1);
-//                        System.out.println("the entered value is less than 0");
-//                       // Toast.makeText(getApplicationContext(), "min value is: " + minVal, Toast.LENGTH_SHORT).show();
+
                     }
                 } catch (NumberFormatException ex) {
                 }
                 storeValue("roll", text);
             }
         });
+
+        editSensorDelay.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+            }
+
+            @Override
+            public void afterTextChanged(Editable text) {
+
+                int tempVal;
+
+                if (text.toString().equals(null) || text.toString().equals("")) {
+                    tempVal = 0;
+                } else {
+                    tempVal = Integer.valueOf(text.toString());
+                }
+
+                try {
+
+                    if (tempVal > 100000000) {
+                        text.replace(0, text.length(), String.valueOf(100000000), 0, 9);
+                    }
+                } catch (NumberFormatException ex) {
+                }
+
+                if (text.toString().equals(null) || text.toString().equals("")){
+                    text.append("");
+                    sharedPref.saveIntValue("delay", 0);
+
+                }else
+                    sharedPref.saveIntValue("delay", Integer.valueOf(text.toString()));
+            }
+        });
+
 
     }
 
@@ -152,7 +179,12 @@ public class SettingMenu extends AppCompatActivity {
      */
 
     private void storeValue(String tag, Editable txtVal){
-        if (txtVal.toString().equals(null) || txtVal.toString().equals("")) txtVal.append("0");
+
+        if (txtVal.toString().equals(null) || txtVal.toString().equals("")){
+            txtVal.append("");
+            sharedPref.saveValue(tag,0);
+
+        }else
            sharedPref.saveValue(tag,Float.valueOf(txtVal.toString()));
 
        }
@@ -177,7 +209,7 @@ public class SettingMenu extends AppCompatActivity {
 
     /**
      * it calibrates gyroscope sensor output to zero at the set orientation position of the phone
-     * by setting firstTimeRead = true;
+     * by setting sensorFirstTimeRead = true;
      * @param v
      */
 
@@ -207,7 +239,7 @@ public class SettingMenu extends AppCompatActivity {
                                     }
                                 }
                             }, 3000);
-                            firstTimeRead = true;
+                            sensorFirstTimeRead = true;
                             System.out.println("Gyro calibration pos set to zero");
                             Toast.makeText(getApplicationContext(), "Calibration successful", Toast.LENGTH_SHORT).show();
                         }

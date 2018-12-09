@@ -9,6 +9,17 @@
     android:background="@color/colorPrimaryDark"
     tools:ignore="MissingDefaultResource">
 
+    <FrameLayout
+        android:layout_width="290dp"
+        android:layout_height="202dp"
+        android:layout_marginTop="45dp"
+        android:background="#e19130"
+        android:visibility="visible"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+    </FrameLayout>
+
     <Button
         android:id="@+id/btnCalibrateGyro"
         android:layout_width="176dp"
@@ -56,12 +67,31 @@
         app:layout_constraintStart_toStartOf="parent" />
 
     <EditText
+        android:id="@+id/editSensorDelay"
+        android:layout_width="89dp"
+        android:layout_height="25dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginEnd="10dp"
+        android:background="#cacfc8"
+        android:ems="10"
+        android:hint="0"
+        android:inputType="number"
+        android:selectAllOnFocus="true"
+        android:singleLine="true"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        android:visibility="visible"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/editRollThreshold" />
+
+
+    <EditText
         android:id="@+id/editRollThreshold"
-        android:layout_width="97dp"
+        android:layout_width="49dp"
         android:layout_height="28dp"
         android:layout_marginTop="16dp"
-        android:layout_marginEnd="92dp"
-        android:background="#bfb412"
+        android:layout_marginEnd="50dp"
+        android:background="#cacfc8"
         android:ems="10"
         android:hint="0"
         android:inputType="number"
@@ -74,11 +104,11 @@
 
     <EditText
         android:id="@+id/editPitchThreshold"
-        android:layout_width="96dp"
+        android:layout_width="50dp"
         android:layout_height="30dp"
         android:layout_marginTop="56dp"
-        android:layout_marginEnd="92dp"
-        android:background="#bfb412"
+        android:layout_marginEnd="50dp"
+        android:background="#cacfc8"
         android:ems="10"
         android:hint="0"
         android:inputType="number"
@@ -91,11 +121,25 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
+        android:id="@+id/txtSensorDelay"
+        android:layout_width="131dp"
+        android:layout_height="39dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginEnd="20dp"
+        android:text="Sensors Read Delay\n(def 100,000,0)"
+        android:textAlignment="center"
+        android:textStyle="bold"
+        android:visibility="visible"
+        app:layout_constraintEnd_toStartOf="@+id/editSensorDelay"
+        app:layout_constraintTop_toBottomOf="@+id/txtGyroRoll" />
+
+
+    <TextView
         android:id="@+id/txtGyroRoll"
         android:layout_width="114dp"
         android:layout_height="27dp"
         android:layout_marginTop="20dp"
-        android:layout_marginEnd="16dp"
+        android:layout_marginEnd="35dp"
         android:text="Roll thr val (0-50)"
         android:textAlignment="center"
         android:textStyle="bold"
@@ -103,12 +147,13 @@
         app:layout_constraintEnd_toStartOf="@+id/editRollThreshold"
         app:layout_constraintTop_toBottomOf="@+id/txtGyroPitch" />
 
+
     <TextView
         android:id="@+id/txtGyroPitch"
         android:layout_width="118dp"
         android:layout_height="27dp"
         android:layout_marginTop="60dp"
-        android:layout_marginEnd="16dp"
+        android:layout_marginEnd="30dp"
         android:text="pitch thr val(0-50)"
         android:textAlignment="center"
         android:textStyle="bold"
@@ -118,13 +163,14 @@
 
     <CheckBox
         android:id="@+id/checkBoxSensors"
-        android:layout_width="207dp"
-        android:layout_height="wrap_content"
+        android:layout_width="208dp"
+        android:layout_height="33dp"
         android:layout_alignParentEnd="true"
-        android:layout_marginTop="17dp"
-        android:layout_marginEnd="115dp"
-        android:clickable="true"
-        android:focusable="true"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="50dp"
+        android:buttonTint="@color/colorPrimary"
+        android:checked="true"
+        android:focusable="auto"
         android:onClick="checkBox"
         android:soundEffectsEnabled="true"
         android:text="Sensors Always On"
@@ -132,20 +178,8 @@
         android:textStyle="bold"
         android:visibility="visible"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/txtGyroRoll" />
+        app:layout_constraintTop_toBottomOf="@+id/txtSensorDelay" />
 
-    <android.support.constraint.Guideline
-        android:id="@+id/guideline"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        app:layout_constraintGuide_begin="257dp" />
 
-    <android.support.constraint.Guideline
-        android:id="@+id/guideline2"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        app:layout_constraintGuide_begin="202dp" />
 
 </android.support.constraint.ConstraintLayout>
