@@ -18,74 +18,91 @@ import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.Toast;
 
 import static com.stevensit.www.cpe556_interface_app.MainActivity.btConnectionStatus;
+import static com.stevensit.www.cpe556_interface_app.MainActivity.checkBoxChecked;
 import static com.stevensit.www.cpe556_interface_app.MainActivity.firstTimeRead;
 import static com.stevensit.www.cpe556_interface_app.MainActivity.gyroPitch_Threshold;
 import static com.stevensit.www.cpe556_interface_app.MainActivity.gyroRoll_Threshold;
 import static com.stevensit.www.cpe556_interface_app.MainActivity.sharedPref;
 
-public class SettingMenu extends AppCompatActivity  {
+public class SettingMenu extends AppCompatActivity {
 
     public EditText editGyroPitchThresh, editGyroRollThresh;
-    private int minVal=0;
-    private int maxVal = 50;
+    protected CheckBox cbSensorsOut;
+
+    private int maxVal = 50; // the max allowed value for the threshold output
 
 
     @SuppressLint("ResourceType")
     @Override
-    protected void onCreate(Bundle savedInstanceState)  {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.settings_menu);
         editGyroRollThresh = findViewById(R.id.editRollThreshold);
         editGyroPitchThresh = findViewById(R.id.editPitchThreshold);
         editGyroPitchThresh.setHint(String.valueOf(gyroPitch_Threshold));
         editGyroRollThresh.setHint(String.valueOf(gyroRoll_Threshold));
+        cbSensorsOut = findViewById(R.id.checkBoxSensors);
 
-        /**
-         * checks for the entered numerical value is within the permitted set range
-         * @param text
-         */
+        cbSensorsOut.setChecked(checkBoxChecked);
 
-        editGyroPitchThresh.addTextChangedListener(new TextWatcher(){
+        setTextListeners();
+    }
+
+
+    /**
+     * checks for the entered numerical value is within the permitted set range
+     */
+
+    private void setTextListeners() {
+
+        editGyroPitchThresh.addTextChangedListener(new TextWatcher() {
             @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) { }
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
 
             @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) { }
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+            }
 
             @Override
-            public void afterTextChanged (Editable text) {
+            public void afterTextChanged(Editable text) {
 
                 float tempVal;
 
                 if (text.toString().equals(null) || text.toString().equals("")) {
-                    tempVal=0;
-                }else{
-                    tempVal = Float.valueOf(text.toString());}
+                    tempVal = 0;
+                } else {
+                    tempVal = Float.valueOf(text.toString());
+                }
 
 
                 try {
 
-                    if(tempVal >50 ) {
-                        text.replace(0, text.length(), "50", 0, 2);
+                    if (tempVal > 50) {
+                        text.replace(0, text.length(), String.valueOf(maxVal), 0, 2);
 
-                    } else if(tempVal < 0) {
-                        text.replace(0, text.length(), "0", 0, 1);
-                        System.out.println("the entered value is less than 0");
-                      //  Toast.makeText(getApplicationContext(),"min value is: "+minVal,Toast.LENGTH_SHORT).show();
-                      //  tempVal=minVal;
+//                    } else if(tempVal < 0) {
+//                        text.replace(0, text.length(), String.valueOf(minVal), 0, 1);
+//                        System.out.println("the entered value is less than 0");
+                        //  Toast.makeText(getApplicationContext(),"min value is: "+minVal,Toast.LENGTH_SHORT).show();
+                        //  tempVal=minVal;
                     }
-                } catch (NumberFormatException ex) {   }
-              storeValue("pitch",text);
+                } catch (NumberFormatException ex) {
+                }
+                storeValue("pitch", text);
             }
         });
 
+        /**
+         * listens to the text changes of gyro roll input box
+         */
 
-
-        editGyroRollThresh.addTextChangedListener(new TextWatcher(){
+        editGyroRollThresh.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
 
@@ -96,10 +113,8 @@ public class SettingMenu extends AppCompatActivity  {
 
             }
 
-
-
             @Override
-            public void afterTextChanged (Editable text) { // Roll
+            public void afterTextChanged(Editable text) { // Roll
 
                 float tempVal;
 
@@ -108,28 +123,27 @@ public class SettingMenu extends AppCompatActivity  {
                     tempVal = 0;
                     Toast.makeText(getApplicationContext(), String.valueOf(tempVal), Toast.LENGTH_SHORT).show();
                 } else {
-                    tempVal = Float.valueOf(text.toString());}
-
+                    tempVal = Float.valueOf(text.toString());
+                }
 
 
                 try {
-                    if (tempVal > 50)
-                          text.replace(0, text.length(), "50", 0, 2);
-                       // Toast.makeText(getApplicationContext(), "max value is: " + maxVal, Toast.LENGTH_SHORT).show();
+                    if (tempVal > 50) {
+                        text.replace(0, text.length(), String.valueOf(maxVal), 0, 2);
+                        // Toast.makeText(getApplicationContext(), "max value is: " + maxVal, Toast.LENGTH_SHORT).show();
 //                    } else if (tempVal < 0) {
 //                          text.replace(0, text.length(), "0", 0, 1);
 //                        System.out.println("the entered value is less than 0");
 //                       // Toast.makeText(getApplicationContext(), "min value is: " + minVal, Toast.LENGTH_SHORT).show();
-//                    }
+                    }
                 } catch (NumberFormatException ex) {
                 }
-
-                    storeValue("roll", text);
-
+                storeValue("roll", text);
             }
         });
 
-       }
+    }
+
 
     /**
      * called by the text change listener to save the entered value
@@ -143,8 +157,31 @@ public class SettingMenu extends AppCompatActivity  {
 
        }
 
+    /**
+     * stores the value of the checkbox
+     * @param v
+     */
+
+    public void checkBox (View v){
+        if (cbSensorsOut.isChecked()) {
+            checkBoxChecked = true;
+            sharedPref.saveBoolean("cbox", true);
+        }
+
+        else {
+            checkBoxChecked = false;
+            sharedPref.saveBoolean("cbox", false);
+        }
+    }
+
 
     //public void settingMenu(View v){ }
+
+    /**
+     * it calibrates gyroscope sensor output to zero at the set orientation position of the phone
+     * by setting firstTimeRead = true;
+     * @param v
+     */
 
     public void calibrateGyroSensor(View v) {
 

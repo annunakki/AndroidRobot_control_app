@@ -24,7 +24,12 @@ public class AppReferences {
      */
 
     public float getValue(String tag){
+
         return sharedRef.getFloat(tag,0);
+    }
+
+    public boolean getBoolean(String tag){
+        return sharedRef.getBoolean(tag,false);
     }
 
     /**
@@ -35,6 +40,13 @@ public class AppReferences {
     public void saveValue(String tag, float val){
         try{
             sharedRef.edit().putFloat(tag,val).apply();
+        }catch(NullPointerException e){
+            throw new NullPointerException();}
+    }
+
+    public void saveBoolean(String tag, boolean val){
+        try{
+            sharedRef.edit().putBoolean(tag,val).apply();
         }catch(NullPointerException e){
             throw new NullPointerException();}
     }

@@ -74,7 +74,6 @@ public class MainActivity extends Activity implements OnClickListener, SensorEve
 
     public EditText editGyroPitchThresh, editGyroRollThresh;
 
-
     //private Button btnSettings;
     protected Button btnForward;
     protected Button btnReverse;
@@ -130,7 +129,8 @@ public class MainActivity extends Activity implements OnClickListener, SensorEve
     public static  AppReferences sharedPref;
 
 
-/**
+
+    /**
     // =============== Main =================================================================
  */
 
@@ -154,6 +154,7 @@ public class MainActivity extends Activity implements OnClickListener, SensorEve
     public void onBackPressed() { // to kill the background process of the app after pressing back button
         sharedPref.saveValue("roll", gyroRoll_Threshold);
         sharedPref.saveValue("pitch",gyroPitch_Threshold);
+        sharedPref.saveBoolean("cbox",false); // reset the checkbox on exit
 
         android.os.Process.killProcess(Process.myPid());
     }
@@ -162,6 +163,7 @@ public class MainActivity extends Activity implements OnClickListener, SensorEve
         sharedPref = new AppReferences(getApplicationContext());
         gyroRoll_Threshold= sharedPref.getValue("roll");
         gyroPitch_Threshold = sharedPref.getValue("pitch");
+        checkBoxChecked = sharedPref.getBoolean("cbox");
 
     }
 
@@ -184,7 +186,6 @@ public class MainActivity extends Activity implements OnClickListener, SensorEve
         btnReverse = findViewById((R.id.btnReverse));
         btnLeft = findViewById(R.id.btnTurnLeft);
         btnRight = findViewById(R.id.btnTurnRight);
-        //btnCalibrateGyro = findViewById(R.id.btnCalibrateGyro);
         screenStatusDisplay = findViewById(R.id.textStatusBox);
         btImage = findViewById(R.id.btnImage);
         robotReadyStatus = findViewById(R.id.txtRobotONStatus);
@@ -192,12 +193,15 @@ public class MainActivity extends Activity implements OnClickListener, SensorEve
         btImage.setVisibility(View.INVISIBLE);
         btCaptureImage = findViewById(R.id.btnCamera);
         robotReadyStatus.setVisibility(View.INVISIBLE);
-        btImage.setActivated(false);
         viewCameraWindow = findViewById(R.id.imageViewWindow);
         txtGyroSensorOut = findViewById(R.id.txtGyroSensorOut);
         txtAccelSensorOut = findViewById(R.id.txtAccelSensorOut);
         editGyroPitchThresh = findViewById(R.id.editPitchThreshold);
         editGyroRollThresh = findViewById(R.id.editRollThreshold);
+
+
+        btImage.setActivated(false);
+
 
         //***************
 //        setButtonListener (btnForward, "F");  //move forward
@@ -497,12 +501,19 @@ public void moveForward(View v) {  // move forward command
             screenStatusDisplay.setText("Camera is activated");
             viewCameraWindow.setVisibility(View.VISIBLE);
             btCaptureImage.setVisibility(View.VISIBLE);
+            txtGyroSensorOut.setEnabled(true);
+            txtAccelSensorOut.setEnabled(true);
 
 
         } else {
             //cameraSW.setTextOff("Camera OFF");
             cameraSW.setText("Enable Camera");
-            sensorOut = false;
+            //sensorOut = false;
+            if (!checkBoxChecked) {
+                txtGyroSensorOut.setEnabled(false);
+                txtAccelSensorOut.setEnabled(false);
+                sensorOut = false;
+            }
             screenStatusDisplay.setText("Camera is deactivated");
            viewCameraWindow.setVisibility(View.INVISIBLE);
             btCaptureImage.setVisibility(View.INVISIBLE);
@@ -813,6 +824,7 @@ public void moveForward(View v) {  // move forward command
 
         public static float gyroPitch_Threshold ;//= 0;
         public static float gyroRoll_Threshold ;//= 0;
+        public static boolean checkBoxChecked;
 
 
 //    float gyroPitch_Threshold=5f;
@@ -851,7 +863,8 @@ public void moveForward(View v) {  // move forward command
             System.out.print("roll: " + gyroPitch+" || ");
             gyroRoll = (float) gyroValues[1].second;
             System.out.print("pitch: "+gyroRoll);
-            System.out.println("|| Threshold: "+gyroPitch_Threshold+" <> "+gyroRoll_Threshold);
+            System.out.print("|| Threshold: "+gyroPitch_Threshold+" <> "+gyroRoll_Threshold);
+            System.out.println("  || sensor output "+checkBoxChecked);
             msgCounter++;
 
 
