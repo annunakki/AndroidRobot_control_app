@@ -165,12 +165,10 @@ public class SettingMenu extends AppCompatActivity {
     public void checkBox (View v){
         if (cbSensorsOut.isChecked()) {
             checkBoxChecked = true;
-            sharedPref.saveBoolean("cbox", true);
         }
 
         else {
             checkBoxChecked = false;
-            sharedPref.saveBoolean("cbox", false);
         }
     }
 

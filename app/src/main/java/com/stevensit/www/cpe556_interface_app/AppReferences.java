@@ -28,9 +28,9 @@ public class AppReferences {
         return sharedRef.getFloat(tag,0);
     }
 
-    public boolean getBoolean(String tag){
-        return sharedRef.getBoolean(tag,false);
-    }
+//    public boolean getBoolean(String tag){
+//        return sharedRef.getBoolean(tag,false);
+//    }
 
     /**
      * save the value in the preferences
@@ -44,12 +44,12 @@ public class AppReferences {
             throw new NullPointerException();}
     }
 
-    public void saveBoolean(String tag, boolean val){
-        try{
-            sharedRef.edit().putBoolean(tag,val).apply();
-        }catch(NullPointerException e){
-            throw new NullPointerException();}
-    }
+//    public void saveBoolean(String tag, boolean val){
+//        try{
+//            sharedRef.edit().putBoolean(tag,val).apply();
+//        }catch(NullPointerException e){
+//            throw new NullPointerException();}
+//    }
 
     /**
      //     * Register SharedPreferences change listener

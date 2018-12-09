@@ -154,7 +154,6 @@ public class MainActivity extends Activity implements OnClickListener, SensorEve
     public void onBackPressed() { // to kill the background process of the app after pressing back button
         sharedPref.saveValue("roll", gyroRoll_Threshold);
         sharedPref.saveValue("pitch",gyroPitch_Threshold);
-        sharedPref.saveBoolean("cbox",false); // reset the checkbox on exit
 
         android.os.Process.killProcess(Process.myPid());
     }
@@ -163,7 +162,7 @@ public class MainActivity extends Activity implements OnClickListener, SensorEve
         sharedPref = new AppReferences(getApplicationContext());
         gyroRoll_Threshold= sharedPref.getValue("roll");
         gyroPitch_Threshold = sharedPref.getValue("pitch");
-        checkBoxChecked = sharedPref.getBoolean("cbox");
+        checkBoxChecked=false;
 
     }
 
