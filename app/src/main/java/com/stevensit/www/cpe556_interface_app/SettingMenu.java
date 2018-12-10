@@ -29,11 +29,12 @@ import static com.stevensit.www.cpe556_interface_app.MainActivity.sensorFirstTim
 import static com.stevensit.www.cpe556_interface_app.MainActivity.gyroPitch_Threshold;
 import static com.stevensit.www.cpe556_interface_app.MainActivity.gyroRoll_Threshold;
 import static com.stevensit.www.cpe556_interface_app.MainActivity.sharedPref;
+import static com.stevensit.www.cpe556_interface_app.MainActivity.smoothOutputCheck;
 
 public class SettingMenu extends AppCompatActivity {
 
     public EditText editGyroPitchThresh, editGyroRollThresh, editSensorDelay;
-    protected CheckBox cbSensorsOut;
+    protected CheckBox cbSensorsOut, smoothOutput;
 
     private int maxVal = 50; // the max allowed value for the threshold output
 
@@ -47,12 +48,14 @@ public class SettingMenu extends AppCompatActivity {
         editGyroPitchThresh = findViewById(R.id.editPitchThreshold);
         editSensorDelay=findViewById(R.id.editSensorDelay);
         cbSensorsOut = findViewById(R.id.checkBoxSensors);
+        smoothOutput = findViewById(R.id.checkBoxSmoothOut);
 
         editGyroPitchThresh.setHint(String.valueOf((int)gyroPitch_Threshold));
         editGyroRollThresh.setHint(String.valueOf((int)gyroRoll_Threshold));
         editSensorDelay.setHint(String.valueOf(sensorDelay));
 
         cbSensorsOut.setChecked(checkBoxChecked);
+        smoothOutput.setChecked(smoothOutputCheck);
         setTextListeners();
     }
 
@@ -202,6 +205,19 @@ public class SettingMenu extends AppCompatActivity {
         else {
             checkBoxChecked = false;
         }
+    }
+
+    /**
+     * stores the value of the checkbox
+     * @param v
+     */
+
+    public void smoothOutput (View v){
+        if (smoothOutput.isChecked())
+            smoothOutputCheck = true;
+        else
+            smoothOutputCheck= false;
+
     }
 
 

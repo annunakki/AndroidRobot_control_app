@@ -31,7 +31,7 @@
         android:layout_marginStart="24dp"
         android:lineSpacingExtra="10dp"
         android:background="#d4cfcf"
-        android:text="TEST TEXT!\ngyroscope thresholds sets the minimum change in gyroscope's output values in order to send it to the robot  "
+        android:text="TEST TEXT!\ngyroscope thresholds sets the minimum change in gyroscope's output values in order to send it to the robot\n smooth sensor output checkbox will stabilize the output of the sensors where it'll divide the average value by threee to five past reads of the sensors  "
 
         android:textColor="@color/colorPrimaryDark"
         android:visibility="visible"
