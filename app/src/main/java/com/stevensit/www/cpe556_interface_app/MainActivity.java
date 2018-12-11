@@ -709,6 +709,7 @@ public class MainActivity extends Activity implements OnClickListener, SensorEve
     }
 
     public void encodeBTSensorStream(Pair x, Pair y, Pair a, Pair b) { // encapsulate the bluetooth messages sent to arduino
+        //output format  "tag:accelX:accelY:gyroRoll:gyroPitch"
 
         //sendToBtStream(startCharacter);
 
@@ -716,13 +717,13 @@ public class MainActivity extends Activity implements OnClickListener, SensorEve
 
         btMessage.append(tag)
                 .append(separateCharacter)
-                .append(x.second.toString())
+                .append(x.second.toString()) // accelX
                 .append(separateCharacter)
-                .append(y.second.toString())
+                .append(y.second.toString()) //accelY
                 .append(separateCharacter)
-                .append(a.second.toString())
+                .append(a.second.toString()) //gyroRoll
                 .append(separateCharacter)
-                .append(b.second.toString())
+                .append(b.second.toString()) //gyroPitch
                 .append(" ");
 
         sendToBtStream(btMessage.toString());
@@ -903,18 +904,13 @@ public class MainActivity extends Activity implements OnClickListener, SensorEve
 
     public Pair[] readAccelerometerSensor(SensorEvent event) { // reads and calculates the output of the accelerometer sensor after the event occurrence
 
-        //System.arraycopy(event.values,0,accelEventValues,0,3);
-//        SensorManager.getRotationMatrix(rotationMatrix,null,event.values,null);
-//        SensorManager.getOrientation(rotationMatrix,orientationValues);
-//        accel_X = orientationValues[0];
-//        accel_Y= orientationValues[1];
 
         if (smoothOutputCheck) {
             accelAvgX = smoothOutput(accelAvgX, event.values[0], 3);
             accelAvgY = smoothOutput(accelAvgY, event.values[1], 3);
         }else {
-            accelAvgX = orientationValues[0];
-            accelAvgY = orientationValues[1];
+            accelAvgX = event.values[0];
+            accelAvgY = event.values[1];
         }
 
         accel_X = roundDecimalNum(accelAvgX);
@@ -939,8 +935,24 @@ public class MainActivity extends Activity implements OnClickListener, SensorEve
 
     }
 
-
-
+    /**
+     * reads and process the sensor values of the gyroscope sensors , it contains the rotation matrices and axis remapping
+     * * we need to transfer the global orientation od the gyro to the local orientation of the phone
+     *
+     * the issue is the output of the gyro goes out of the required range when the values turn into negative
+     *
+     * NOTE :: the gyro calibration to zero point issue is not solved yet, it should be included here, there are some  ideas to solve it
+     * can be performed later because of the limited time
+     * sol1: convert the negative part of the periodic angle to positive to obtain a positive 360 degree angle then subtract the offset value
+     * from the readings
+     *
+     * sol2: we check the angle difference outout  of the gyro and move the servo motors when the value is less than the set threshold
+     *
+     * sol3: apply the current rotation matrix to another one that will shift the output with the selected angle of the phone
+     *
+     * @param event
+     * @return
+     */
     public Pair[] readGyroSensor(SensorEvent event) {  // reads and calculate the output of the gyroscope and vector rotation sensor after the event occurrence
 
         // System.arraycopy(event.values,0,gyroEventValues,0,3);
@@ -951,6 +963,9 @@ public class MainActivity extends Activity implements OnClickListener, SensorEve
 //      double pitch = Math.toDegrees(orientationValues[1]);
 //      double roll = Math.toDegrees(orientationValues[0]);
 
+//        gyroAvgPitch = roundDecimalNum(event.values[0]);
+//        gyroAvgRoll = - roundDecimalNum(event.values[1]);
+
         if (sensorFirstTimeRead) {
 //            rollValueOffset = (float)Math.toDegrees(orientationValues[1]);
 //            pitchValueOffset = (float)Math.toDegrees(orientationValues[0]);
@@ -960,11 +975,11 @@ public class MainActivity extends Activity implements OnClickListener, SensorEve
             sensorFirstTimeRead = false;
         }
         if (orientationValues[0] <0)
-            pitch = -(roundDecimalNum((float)Math.toDegrees(orientationValues[0]) + (float)Math.toDegrees(pitchValueOffset)));
+            pitch = (roundDecimalNum((float)Math.toDegrees(orientationValues[0]) + (float)Math.toDegrees(pitchValueOffset)));
         else
-            pitch = -(roundDecimalNum((float)Math.toDegrees(orientationValues[0]) - (float)Math.toDegrees(pitchValueOffset))); // y asix rotation
+            pitch = (roundDecimalNum((float)Math.toDegrees(orientationValues[0]) - (float)Math.toDegrees(pitchValueOffset))); // y asix rotation
 
-        roll = roundDecimalNum((float)Math.toDegrees(orientationValues[1]));  // x axis rotation
+        roll = - roundDecimalNum((float)Math.toDegrees(orientationValues[1]));  // x axis rotation
 
         if (smoothOutputCheck) {
             gyroAvgRoll = roundDecimalNum(smoothOutput(gyroAvgRoll, roll, 3));
