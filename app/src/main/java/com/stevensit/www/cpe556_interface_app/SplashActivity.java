@@ -1,8 +1,12 @@
-package com.stevensit.www.cpe556_interface_app;
 
-/*
-   creates the activity container to display the splash photo when start the app
- */
+
+package com.stevensit.www.cpe556_interface_app;
+/**
+        *
+        * creates and handles the splash screen when first run the app
+        * it displays the selected photo from resources folder
+        */
+
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;

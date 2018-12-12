@@ -1,5 +1,3 @@
-package com.stevensit.www.cpe556_interface_app;
-
 /**
  this is the main container of the app
 
@@ -15,11 +13,18 @@ package com.stevensit.www.cpe556_interface_app;
  also all the necessary output forms of the measured data.
 
  *************
- NOTE >>>: the code body below is virtually divided into segments for faster troubleshooting and code clearance
+ NOTES >>>: the code body below is virtually divided into segments for faster troubleshooting and code clearance
  also some parts of the code are commented out because is not tested yet or may be used for the future options upgrade.
 
  also in case the keeps crashing because the value cast issue even the cimpiler doesnt show any errors, uninstall the app
  from the phone before uploading new one
+
+   >>> in progress, working on function to let the robot move to the direction of the sensors readings, in other words
+ the robot will mode the same way that the camera motors move
+
+ >>> the first design intent to divide the functions here into classes to organized the code and to reduce the overhead of debugging,
+ but due limited time in addition to some issues related to static variables and multi threads, we had to build it into the current
+ design ,, can be re organized later into better design
 
  *****************
  *
@@ -27,6 +32,9 @@ package com.stevensit.www.cpe556_interface_app;
  ====================================================================================================================
  ====================================================================================================================
  */
+
+package com.stevensit.www.cpe556_interface_app;
+
 
 /**
  * all the necessary variables and constants are collected here hence there are additional variables included among the code part
@@ -74,11 +82,12 @@ import java.util.UUID;
 
 import static android.view.animation.Animation.REVERSE;
 
+
+
+
 public class MainActivity extends Activity implements OnClickListener, SensorEventListener {
 
     public EditText editGyroPitchThresh, editGyroRollThresh;
-
-    //private Button btnSettings;
     protected Button btnForward;
     protected Button btnReverse;
     protected Button btnLeft;
@@ -87,7 +96,6 @@ public class MainActivity extends Activity implements OnClickListener, SensorEve
     //private Button btnCalibrateGyro;
     public TextView screenStatusDisplay;
     public TextView blinkText, robotReadyStatus;
-    //public EditText editGyroPitchThresh, editGyroRollThresh;
     protected Switch cameraSW;
     protected ImageView viewCameraWindow;
     public ImageButton btImage, btCaptureImage;
@@ -96,26 +104,26 @@ public class MainActivity extends Activity implements OnClickListener, SensorEve
     public final String msgBackward = "MOVING IN REVERSE";
     public final String msgLeft = "TURNING LEFT";
     public final String msgRight = "TURNING RIGHT";
-    //public final String msgSetToCenter = " Camera set to Center";
+    //public final String msgSetToCenter = " Camera set to Center";  // sets the camera to home position
 
 
     //=========bluetooth segment ===========
     public static boolean btConnectionStatus = false; // true if the bt connection is active
     public byte[] imageBuffer = new byte[15360];  //reserve 15KB for the image stream
-    private static int numIndex=0;
+    private static int numIndex = 0;
     public InputStream btInStream;
-    private static  BTStreamListener thBTDataReceiverThread;
+    private static BTStreamListener thBTDataReceiverThread;
     public static INStreamListenService inboudStreamThread;
     public static boolean msgBTListenService = false; // checks if the inbound listen service is started
     public static boolean msgBTInboundReceiver = false; // checks if the inblound service is listening and capturing the inStream
     protected ImageCapture captureImg;
     private Handler msgHandler;
     private static String btPairedDeviceName = null;
-    public BluetoothAdapter myBluetooth=null;
+    public BluetoothAdapter myBluetooth = null;
     private BluetoothSocket btSocket = null;
     static final UUID myUUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
     public OutputStream btOutputStream;
-// public OutputStream btOutputStream;
+//  public OutputStream btOutputStream;
 //    public BluetoothSocket inputSocket;
 //    private InputStream inStream=null;
 //    private byte [] btReadBuffer;
@@ -128,15 +136,13 @@ public class MainActivity extends Activity implements OnClickListener, SensorEve
     private TextView txtAccelSensorOut, txtGyroSensorOut;
     private float[] rotationMatrix = new float[9];
     private float[] orientationValues = new float[3];
-    public static int sensorDelay ;
-    //    private int sensorReadyDelay = 100000000;//default value = SensorManager.SENSOR_DELAY_UI; // set the ready intervals for the sensors
-//    private int sensorLatency = 100000000;
-    public static  AppReferences sharedPref;
-
+    public static int sensorDelay;
+    boolean sensorOut = false; // it's included in camera view switch to activate the sensors readings when it's true
+    public static AppReferences sharedPref;
 
 
     /**
-     // =============== Main =================================================================
+     * // =============== Main =================================================================
      */
 
     @Override
@@ -149,10 +155,10 @@ public class MainActivity extends Activity implements OnClickListener, SensorEve
         // System.out.println("current orientation "+getResources().getConfiguration().orientation);
         try {
             initialize(); // define all the objects on the app screen
-        } catch (Exception e) {}
+        } catch (Exception e) {
+        }
         sensorsSystemInitialize(); // define and set the selected sensors
         initializeImageCapture();
-
     }
 
     @Override
@@ -161,19 +167,17 @@ public class MainActivity extends Activity implements OnClickListener, SensorEve
         android.os.Process.killProcess(Process.myPid());
     }
 
-    public void loadPrefValues(){
+    public void loadPrefValues() {
         sharedPref = new AppReferences(getApplicationContext());
         gyroRoll_Threshold = sharedPref.getValue("roll");
         gyroPitch_Threshold = sharedPref.getValue("pitch");
         sensorDelay = sharedPref.getInt("delay");
-
     }
 
-    private void savePrefValues(){
-
+    private void savePrefValues() {
         sharedPref.saveValue("roll", gyroRoll_Threshold);
-        sharedPref.saveValue("pitch",gyroPitch_Threshold);
-        sharedPref.saveIntValue("delay",sensorDelay);
+        sharedPref.saveValue("pitch", gyroPitch_Threshold);
+        sharedPref.saveIntValue("delay", sensorDelay);
     }
 
     @Override
@@ -188,9 +192,12 @@ public class MainActivity extends Activity implements OnClickListener, SensorEve
             System.out.println("msg: " + orientation);
     }
 
+    /**
+     * define and initialize all the necessary variables and objects when first launch the app
+     */
+
     @SuppressLint("ClickableViewAccessibility")
     private void initialize() {
-
         btnForward = findViewById(R.id.btnForward);
         btnReverse = findViewById((R.id.btnReverse));
         btnLeft = findViewById(R.id.btnTurnLeft);
@@ -208,17 +215,15 @@ public class MainActivity extends Activity implements OnClickListener, SensorEve
         editGyroPitchThresh = findViewById(R.id.editPitchThreshold);
         editGyroRollThresh = findViewById(R.id.editRollThreshold);
 
-
         btImage.setActivated(false);
 
-
+// not tested yet , an alternative initialize function for the control buttons
         //***************
 //        setButtonListener (btnForward, "F");  //move forward
 //        setButtonListener (btnReverse, "B");  // move reverse or backward
 //        setButtonListener (btnLeft, "L");  // move to the left
 //        setButtonListener (btnRight, "R");  //move to the right
 
-////
 //        t1=(TextView)findViewById(R.id.textStatusBox);
         ///bluetooth_connect_device();
 
@@ -241,8 +246,6 @@ public class MainActivity extends Activity implements OnClickListener, SensorEve
      */
 
 //    public void setBlinkingText (TextView obj)  {  // to enable the blinking option on the selected textView object
-//
-//
 //        Animation anim = new AlphaAnimation(0.0f, 1.0f);
 //        anim.setDuration(10000);
 //        anim.setStartOffset(10000);
@@ -251,24 +254,21 @@ public class MainActivity extends Activity implements OnClickListener, SensorEve
 //        obj.setAnimation(anim);
 //    }
 
+
     /**
      * prepare image capture function and bluetooth receiver
-     *
      */
 
-    public void initializeImageCapture(){
-
+    public void initializeImageCapture() {
         viewCameraWindow = findViewById(R.id.imageViewWindow);
         viewCameraWindow.setVisibility(View.INVISIBLE);
         // viewCameraWindow.setImageBitmap();
-
         captureImg = new ImageCapture();
-
     }
-
 
     /**
      * enables any selected object to blink with set durations and intervals
+     *
      * @param obj
      */
 
@@ -301,6 +301,7 @@ public class MainActivity extends Activity implements OnClickListener, SensorEve
 
     /**
      * displays the robot's moving status on the display screen
+     *
      * @param s , reads the required string message
      */
 
@@ -318,6 +319,7 @@ public class MainActivity extends Activity implements OnClickListener, SensorEve
 
     /**
      * displays toast short notification on the screen, can take any kind od string messages
+     *
      * @param title
      * @param msg
      */
@@ -334,8 +336,7 @@ public class MainActivity extends Activity implements OnClickListener, SensorEve
 
     @SuppressLint("SetTextI18n")
     public void btConnectedMSG() {  // display bluetooth connection messages and set the indicators
-        showToastMSG(getApplicationContext(),"Now connected to: ",btPairedDeviceName );
-
+        showToastMSG(getApplicationContext(), "Now connected to: ", btPairedDeviceName);
         btImage.setVisibility(View.VISIBLE);
         robotReadyStatus.setVisibility(View.VISIBLE);
         btImage.setActivated(true);
@@ -343,7 +344,6 @@ public class MainActivity extends Activity implements OnClickListener, SensorEve
         screenStatusDisplay.setText("BT Name: \n" + btPairedDeviceName);
         btConnectionStatus = true;
     }
-
 
 
     /**
@@ -371,7 +371,6 @@ public class MainActivity extends Activity implements OnClickListener, SensorEve
 //            }});
 //        }
 
-
     /**
      * connected with settings button to call te settings menu when clicked
      * @param v
@@ -386,6 +385,7 @@ public class MainActivity extends Activity implements OnClickListener, SensorEve
 
     /**
      * rounds the fed float value into the selected decimal output format
+     *
      * @param num
      * @return
      */
@@ -396,14 +396,18 @@ public class MainActivity extends Activity implements OnClickListener, SensorEve
     }
 
     /**
-     // ^^^^^^^^^^^^^^^^^^^^^^ main segment ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     * // ^^^^^^^^^^^^^^^^^^^^^^ main segment ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 
 
-     // ============== Buttons segment =============================================================
+
+     * // ============== Buttons segment =============================================================
      */
 
-
+    /**
+     * move forward button
+     * @param v
+     */
     @SuppressLint("ClickableViewAccessibility")
     public void moveForward(View v) {  // move forward command
         // setButtonListener(btnForward, "F", msgForward);
@@ -421,7 +425,10 @@ public class MainActivity extends Activity implements OnClickListener, SensorEve
             }
         });
     }
-
+    /**
+     * move backward (reverse) button
+     * @param v
+     */
     @SuppressLint("ClickableViewAccessibility")
     public void moveReverse(View v) {  // move in reverse command
         // setButtonListener(btnReverse, "R", msgBackward);
@@ -432,7 +439,6 @@ public class MainActivity extends Activity implements OnClickListener, SensorEve
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
                     sendToBtStream("B");
                     displayMoveStatus(msgBackward);
-
                 }
                 if (event.getAction() == MotionEvent.ACTION_UP) {
                     displayStopMSG();
@@ -441,6 +447,11 @@ public class MainActivity extends Activity implements OnClickListener, SensorEve
             }
         });
     }
+
+    /**
+     * turn to the left button
+     * @param v
+     */
 
     @SuppressLint("ClickableViewAccessibility")
     public void turnLeft(View v) { // turn to the left command
@@ -453,7 +464,6 @@ public class MainActivity extends Activity implements OnClickListener, SensorEve
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
                     sendToBtStream("L");
                     displayMoveStatus(msgLeft);
-
                 }
                 if (event.getAction() == MotionEvent.ACTION_UP) {
                     displayStopMSG();
@@ -462,6 +472,11 @@ public class MainActivity extends Activity implements OnClickListener, SensorEve
             }
         });
     }
+
+    /**
+     * turn to the right button
+     * @param v
+     */
 
     @SuppressLint("ClickableViewAccessibility")
     public void turnRight(View v) {   // turn to the right command
@@ -484,6 +499,11 @@ public class MainActivity extends Activity implements OnClickListener, SensorEve
         });
     }
 
+    /**
+     * onClick builtin function listener
+     * @param v
+     */
+
     @Override
     public void onClick(View v) {
         try {
@@ -492,14 +512,20 @@ public class MainActivity extends Activity implements OnClickListener, SensorEve
         }
     }
 
-//
-
+    /**
+     * camera control switch to enable or disable the camera while running the robot
+     * @param v
+     */
     public void cameraSwitch(View v) {
-        if(btConnectionStatus)
+        if (btConnectionStatus)
             activateCamera();
         else
             screenStatusDisplay.setText("Bluetooth is OFF");
     }
+
+    /**
+     * controls the enable process of the camera, it's part of the cameraSwitch fucntion
+     */
 
     public void activateCamera() {
 
@@ -513,19 +539,14 @@ public class MainActivity extends Activity implements OnClickListener, SensorEve
             txtGyroSensorOut.setEnabled(true);
             txtAccelSensorOut.setEnabled(true);
 
-
         } else {
             //cameraSW.setTextOff("Camera OFF");
             cameraSW.setText("Enable Camera");
             if (!checkBoxChecked) {
                 txtGyroSensorOut.setEnabled(false);
                 txtAccelSensorOut.setEnabled(false);
-                sensorOut = false;}
-//            }else {
-//                txtGyroSensorOut.setEnabled(true);
-//                txtAccelSensorOut.setEnabled(true);
-//                sensorOut = true;
-//            }
+                sensorOut = false;
+            }
             screenStatusDisplay.setText("Camera is deactivated");
             viewCameraWindow.setVisibility(View.INVISIBLE);
             btCaptureImage.setVisibility(View.INVISIBLE);
@@ -533,24 +554,24 @@ public class MainActivity extends Activity implements OnClickListener, SensorEve
     }
 
     /**
-     * button for capture image
+     * image capture button , with the upgrade later, can have the function to capture video stream
      */
 
     public void cameraCaptureButton(View v) {
 
-        if(captureImg!=null) {
+        if (captureImg != null) {
             startBTListenerService();
 //            thBTDataReceiverThread.readBTStream();
             captureImg.captureImage(getApplicationContext());
             System.out.println("camera capture button pressed ,, capturing signal sent.....");
-        }
-        else
-            showToastMSG(getApplicationContext(),"code error","image capture class is not instantiate ");
+        } else
+            showToastMSG(getApplicationContext(), "code error", "image capture class is not instantiate ");
     }
 
 
     /**
      * sets the camera position back to its home position
+     * not tested or enabled yet
      */
 
 //    @SuppressLint("ClickableViewAccessibility")
@@ -560,23 +581,23 @@ public class MainActivity extends Activity implements OnClickListener, SensorEve
 //        displayMoveStatus(msgSetToCenter);
 //        System.out.println("msg: camera set to center pos");
 //    }
-    /** ^^^^^^^^^^^^^^^^ Buttons segment ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+    /**
+     * ^^^^^^^^^^^^^^^^ Buttons segment ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 
 
-     //================Bluetooth segment =============================================================
 
+     * //================Bluetooth segment =============================================================
 
-     /**
      * onClickListener assigned to bluetooth connect button on the main interface
-     *
      */
 
-
-    public void connectBluetooth(View v){
+    public void connectBluetooth(View v) {
         try {
             bluetoothConnectionManager();
-        }catch (IOException e){}
+        } catch (IOException e) {
+        }
     }
 
 
@@ -587,14 +608,13 @@ public class MainActivity extends Activity implements OnClickListener, SensorEve
      * @throws IOException
      */
     @SuppressLint({"HardwareIds"})
-    public void bluetoothConnectionManager()  throws IOException {
-        msgHandler= new Handler(Looper.getMainLooper());
+    public void bluetoothConnectionManager() throws IOException {
+        msgHandler = new Handler(Looper.getMainLooper());
         cameraSW.setEnabled(true);
-
 
         if (btConnectionStatus) {
             System.out.println("msg: " + "BT is already connected");
-            showToastMSG(getApplicationContext(),"Information Message:", "BT is already paired");
+            showToastMSG(getApplicationContext(), "Information Message:", "BT is already paired");
         } else {
 
             myBluetooth = BluetoothAdapter.getDefaultAdapter();
@@ -616,11 +636,9 @@ public class MainActivity extends Activity implements OnClickListener, SensorEve
                     }
                 }
 
-                //  myBluetooth = BluetoothAdapter.getDefaultAdapter();//get the mobile bluetooth device
                 BluetoothDevice btDevice = myBluetooth.getRemoteDevice(address);//connects to the device's address and checks if it's available
-                btSocket = btDevice.createInsecureRfcommSocketToServiceRecord(myUUID);//create paired connection
-                System.out.println("after " + BluetoothAdapter.STATE_CONNECTED);
-
+                btSocket = btDevice.createInsecureRfcommSocketToServiceRecord(myUUID);//create socket connection
+                System.out.println("connected to: " + BluetoothAdapter.STATE_CONNECTED);
 
                 msgHandler.postDelayed(new Runnable() {
 
@@ -650,12 +668,13 @@ public class MainActivity extends Activity implements OnClickListener, SensorEve
 
 
     /**
-     * bluetooth output socket, used to send the data and commands to the comnnected robot
+     * Bluetooth output socket, it sends the defined data through the BT connection to the receiving party
+     *
      * @param streamChr
      */
 
     public void sendToBtStream(String streamChr) {  // send the selected output to bluetooth output socket
-        streamChr = streamChr+":0:0:0:0 ";
+        streamChr = streamChr + ":0:0:0:0 ";
         try {
             OutputStream btOutputStream = btSocket.getOutputStream();
             if (!streamChr.isEmpty() && btOutputStream != null) {
@@ -671,17 +690,17 @@ public class MainActivity extends Activity implements OnClickListener, SensorEve
 
     /**
      * to clean out the bluetooth connection stream when called
-     * not utilized yet
+     * this one and the onResume function are called to free up phone resources when the hardware or the thread process are idle
      */
 
-    public void onPause(){
+    public void onPause() {
         savePrefValues();
 
         if (btOutputStream != null) {
             try {
                 btOutputStream.flush();
             } catch (IOException e) {
-                showToastMSG(getApplicationContext(),"BT outputStream error", e.getMessage());
+                showToastMSG(getApplicationContext(), "BT outputStream error", e.getMessage());
             }
         }
         super.onPause();
@@ -690,31 +709,36 @@ public class MainActivity extends Activity implements OnClickListener, SensorEve
     @Override
     public void onResume() {
         loadPrefValues();
-
         registerTheSensorsListeners();
         super.onResume();
     }
 
-
     /**
-     * terminates bt connection  when called
+     * terminates BT connection  when called,, later will be linked to a BT disconnedt button
      */
 
-    public void closeConnection (){
+    public void closeConnection() {
         try {
             btSocket.close();
         } catch (IOException e2) {
-            showToastMSG(getApplicationContext(),"BT socket error", e2.getMessage());
+            showToastMSG(getApplicationContext(), "BT socket error", e2.getMessage());
         }
     }
 
-    public void encodeBTSensorStream(Pair x, Pair y, Pair a, Pair b) { // encapsulate the bluetooth messages sent to arduino
-        //output format  "tag:accelX:accelY:gyroRoll:gyroPitch"
+    /**
+     *  encapsulates the sensors output into on bt stream packet
+     *  output format  "tag:accelX:accelY:gyroRoll:gyroPitch "
+     *
+     * @param x for accelerometer X
+     * @param y for accelerometer Y
+     * @param a for gyroscope Roll
+     * @param b for gyroscope Pitch
+     */
 
-        //sendToBtStream(startCharacter);
+    public void encodeBTSensorStream(Pair x, Pair y, Pair a, Pair b) { // encapsulate the bluetooth messages sent to arduino
+        //
 
         StringBuilder btMessage = new StringBuilder();
-
         btMessage.append(tag)
                 .append(separateCharacter)
                 .append(x.second.toString()) // accelX
@@ -724,7 +748,7 @@ public class MainActivity extends Activity implements OnClickListener, SensorEve
                 .append(a.second.toString()) //gyroRoll
                 .append(separateCharacter)
                 .append(b.second.toString()) //gyroPitch
-                .append(" ");
+                .append(" "); // added for the arduino part for the packet detection and decoding
 
         sendToBtStream(btMessage.toString());
     }
@@ -735,47 +759,56 @@ public class MainActivity extends Activity implements OnClickListener, SensorEve
      * starts thread listening service for the incoming bluetooth data
      */
 
-    public synchronized void startBTListenerService(){  /// start the thread service from here
-        if (thBTDataReceiverThread!=null) { closeConnection(); thBTDataReceiverThread=null;}
-        if (inboudStreamThread==null) {
+    public synchronized void startBTListenerService() {  /// start the thread service from here
+        if (thBTDataReceiverThread != null) {
+            closeConnection();
+            thBTDataReceiverThread = null;
+        }
+        if (inboudStreamThread == null) {
             inboudStreamThread = new INStreamListenService();
             inboudStreamThread.start();
         }
-        msgBTListenService =true;
+        msgBTListenService = true;
     }
 
-    public synchronized void startBTInboundListener(){
-        if (inboudStreamThread!=null){closeConnection(); inboudStreamThread=null;}
-        if (thBTDataReceiverThread==null) {
-            thBTDataReceiverThread= new BTStreamListener();
+    public synchronized void startBTInboundListener() {
+        if (inboudStreamThread != null) {
+            closeConnection();
+            inboudStreamThread = null;
+        }
+        if (thBTDataReceiverThread == null) {
+            thBTDataReceiverThread = new BTStreamListener();
             thBTDataReceiverThread.start();
         }
-        msgBTInboundReceiver =true;
-
+        msgBTInboundReceiver = true;
     }
 
     /**
      * stops all the running threads
      */
 
-    public synchronized void stop(){
-        if (inboudStreamThread!=null){closeConnection(); inboudStreamThread=null;}
-        if (thBTDataReceiverThread!=null) { closeConnection(); thBTDataReceiverThread=null;}
-        msgBTInboundReceiver =false;
-        msgBTListenService =false;
+    public synchronized void stop() {
+        if (inboudStreamThread != null) {
+            closeConnection();
+            inboudStreamThread = null;
+        }
+        if (thBTDataReceiverThread != null) {
+            closeConnection();
+            thBTDataReceiverThread = null;
+        }
+        msgBTInboundReceiver = false;
+        msgBTListenService = false;
     }
 
     /**
+     * // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ bluetooth segment ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-     // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ bluetooth segment ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 
-     // =============== Sensors Segment ==========================================================
+     * // =============== Sensors Segment ==========================================================
      */
 
-
     public void sensorsSystemInitialize() { //initialize and register the selected sensors
-
         mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         snsAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION);
         snsGyroscopeVector = mSensorManager.getDefaultSensor(Sensor.TYPE_GAME_ROTATION_VECTOR);
@@ -783,6 +816,9 @@ public class MainActivity extends Activity implements OnClickListener, SensorEve
         registerTheSensorsListeners();
     }
 
+    /**
+     * builtin function to register the defined sensors with the sensors manager
+     */
 
     public void registerTheSensorsListeners() {
         int sensorLatency = sensorDelay;
@@ -798,44 +834,43 @@ public class MainActivity extends Activity implements OnClickListener, SensorEve
             Toast.makeText(getApplicationContext(), "no gyroscope sensor detected", Toast.LENGTH_SHORT).show();
     }
 
-
-    boolean sensorOut = false; // it's included in camera view switch to activate the sensors readings when it's true
-
     /**
      * sensors events change listen service
+     *
      * @param event
      */
     @Override
     public synchronized void onSensorChanged(SensorEvent event) {  // senses the value changes of the sensors
-
-//        Sensor sensorType = event.sensor;
-//        if (sensorType.getType() == snsAccelerometer.getType())
-//            readAccelerometerSensor(event);
-//        if (sensorType.getType() == snsGyroscopeVector.getType())
-//            readGyroSensor(event);
-
-//        if (sensorType.getType() == snsAccelerometer.getType() || sensorType.getType() == snsGyroscopeVector.getType())
         readSensorsData(event);
     }
 
     /**
      * checks the type of sensor data and filter out the desired sensor types
+     *
      * @param event
      */
 
 //    float accelX_Threshold=0.05f;
 //    float accelY_Threshold=0.05f;
-
-    public static float gyroPitch_Threshold ;//= 0;
-    public static float gyroRoll_Threshold ;//= 0;
-    public static boolean checkBoxChecked;
-
-
-    //    float gyroPitch_Threshold=5f;
+//    float gyroPitch_Threshold=5f;
 //    float gyroRoll_Threshold =5f;
+
+    public static float gyroPitch_Threshold;//= 0;
+    public static float gyroRoll_Threshold;//= 0;
+    public static boolean checkBoxChecked;
     float gyroPitch, gyroRoll;
-    float gyroPitchPrev=0, gyroRollPrev=0;
-    int msgCounter=0;
+    float gyroPitchPrev = 0, gyroRollPrev = 0;
+    int msgCounter = 0;  // counts the number of the out output messages from the debugger for troubleshooting purposes
+
+    /**
+     * reads the output of sensors event to process the output data
+     * contains:
+     * system out instructions for debugging purpose
+     * sets the final output results to the text out boxes on the main screen
+     * sensors output threshold check for bluetooth data output
+     *
+     * @param event
+     */
 
     @SuppressLint("SetTextI18n")
     public void readSensorsData(SensorEvent event) {
@@ -861,23 +896,23 @@ public class MainActivity extends Activity implements OnClickListener, SensorEve
                     gyroValues[0].first + gyroValues[0].second + "\n" +
                     gyroValues[1].first + gyroValues[1].second + "\n");
 
-
-            System.out.print("msg#"+msgCounter+"  Gyro data:  ");
-            gyroPitch = (float)gyroValues[0].second;
-            System.out.print("roll: " + gyroPitch+" || ");
+            // for debugging purpose, it shows all the set configurations and out data of the sensors
+            System.out.print("msg#" + msgCounter + "  Gyro data:  ");
+            gyroPitch = (float) gyroValues[0].second;
+            System.out.print("roll: " + gyroPitch + " || ");
             gyroRoll = (float) gyroValues[1].second;
-            System.out.print("pitch: "+gyroRoll);
-            System.out.print("|| Threshold: "+gyroPitch_Threshold+" <> "+gyroRoll_Threshold);
-            System.out.print("  || sensor delay: "+sensorDelay);
-            System.out.print("  || smooth output: "+smoothOutputCheck);
-            System.out.println("  || sensor output "+checkBoxChecked);
+            System.out.print("pitch: " + gyroRoll);
+            System.out.print("|| Threshold: " + gyroPitch_Threshold + " <> " + gyroRoll_Threshold);
+            System.out.print("  || sensor delay: " + sensorDelay);
+            System.out.print("  || smooth output: " + smoothOutputCheck);
+            System.out.println("  || sensor output " + checkBoxChecked);
             msgCounter++;
 
-
-            if (Math.abs(gyroPitch-gyroPitchPrev) > gyroPitch_Threshold || Math.abs(gyroRoll-gyroRollPrev) > gyroRoll_Threshold) {
+// sets the output threshold of the sensors to the bluetooth
+            if (Math.abs(gyroPitch - gyroPitchPrev) > gyroPitch_Threshold || Math.abs(gyroRoll - gyroRollPrev) > gyroRoll_Threshold) {
                 encodeBTSensorStream(accelValues[0], accelValues[1], gyroValues[0], gyroValues[1]);
-                gyroPitchPrev=gyroPitch;
-                gyroRollPrev=gyroRoll;
+                gyroPitchPrev = gyroPitch;
+                gyroRollPrev = gyroRoll;
             }
         }
     }
@@ -886,58 +921,66 @@ public class MainActivity extends Activity implements OnClickListener, SensorEve
      * some variables related to sensors operations
      */
 
-    // String tagAccel ="ac";
-    //String tagGyro = "gr";
     String tag = "T";
-    String startCharacter = "s";
     String separateCharacter = ":";
-    String stopCharacter = "p";
+    String pattern = "#.##"; // sets the output format of the float numbers through function roundDecimalNum()
+
     public static Pair[] accelValues, gyroValues;
     float accelAvgX, accelAvgY, gyroAvgRoll, gyroAvgPitch;
-
     public static boolean sensorFirstTimeRead = false; // sets the calibration position
     float pitchValueOffset = 0, rollValueOffset = 0, roll = 0, pitch = 0; // x = pitch ,, y = roll
-    String pattern = "#.##";
-
     float accel_X, accel_Y;
-    public static boolean smoothOutputCheck;
+    public static boolean smoothOutputCheck = false;
+
+    /**
+     * read and process the accelerometer sensor event outputs for both axis X and axis Y
+     * @param event
+     * @return
+     */
 
     public Pair[] readAccelerometerSensor(SensorEvent event) { // reads and calculates the output of the accelerometer sensor after the event occurrence
-
 
         if (smoothOutputCheck) {
             accelAvgX = smoothOutput(accelAvgX, event.values[0], 3);
             accelAvgY = smoothOutput(accelAvgY, event.values[1], 3);
-        }else {
+        } else {
             accelAvgX = event.values[0];
             accelAvgY = event.values[1];
         }
-
         accel_X = roundDecimalNum(accelAvgX);
         accel_Y = roundDecimalNum(accelAvgY);
 
         return new Pair[]{new Pair<>("axis_X: ", accel_X), new Pair<>("axis_Y: ", accel_Y)};
     }
 
+    /**
+     * produces the average of the last three readings (can be changed to more but it'll add more delay)
+     * to prevent the sudden change in the sensors output data
+     *
+     * @param avg
+     * @param newVal
+     * @param n
+     * @return
+     */
+
     private float smoothOutput(float avg, float newVal, float n) {
 
-//        if (abs(thisValue - averageOfLast10Values) > someThreshold)
-//        {
-//            thisValue = averageOfLast10Values;
-//        }
+//        if (Math.abs(current - avg) > threshold) current = avg;
+        //newAvg = oldAvg*(n-1)/n +  newVal /n;  // <<- general equation for avg output
 
         avg -= avg / n;
         avg += newVal / n;
-
-        //newAvg = oldAvg*(n-1)/n +  newVal /n;
-
         return avg;
-
     }
 
     /**
-     * reads and process the sensor values of the gyroscope sensors , it contains the rotation matrices and axis remapping
-     * * we need to transfer the global orientation od the gyro to the local orientation of the phone
+     * reads and process the sensor event output of the gyroscope sensor , it contains the rotation matrices and axis remapping
+     * to correct phone's orientation frame data with the global frame
+     *
+     *
+     * TODO  sets the gyro calibration to set the zero point of the roll position of the phone with the local frame
+     *
+     * * we need to transfer the global orientation of the gyro to the local orientation of the phone
      *
      * the issue is the output of the gyro goes out of the required range when the values turn into negative
      *
@@ -946,61 +989,39 @@ public class MainActivity extends Activity implements OnClickListener, SensorEve
      * sol1: convert the negative part of the periodic angle to positive to obtain a positive 360 degree angle then subtract the offset value
      * from the readings
      *
-     * sol2: we check the angle difference outout  of the gyro and move the servo motors when the value is less than the set threshold
+     * sol2: we check the angle difference output  of the gyro and move the servo motors when the value is less than the set threshold
      *
-     * sol3: apply the current rotation matrix to another one that will shift the output with the selected angle of the phone
+     * sol3: apply the current rotation matrix to another one that will shift the output with the selected angle of the phone (euler angles)
+     * check http://www.chrobotics.com/library/understanding-euler-angles
      *
      * @param event
      * @return
      */
     public Pair[] readGyroSensor(SensorEvent event) {  // reads and calculate the output of the gyroscope and vector rotation sensor after the event occurrence
 
-        // System.arraycopy(event.values,0,gyroEventValues,0,3);
+        //roll is index 1  // pitch is index 0
         SensorManager.getRotationMatrixFromVector(rotationMatrix, event.values);
         SensorManager.remapCoordinateSystem(rotationMatrix, SensorManager.AXIS_X, SensorManager.AXIS_Z, rotationMatrix);
         SensorManager.getOrientation(rotationMatrix, orientationValues);
 
-//      double pitch = Math.toDegrees(orientationValues[1]);
-//      double roll = Math.toDegrees(orientationValues[0]);
-
-//        gyroAvgPitch = roundDecimalNum(event.values[0]);
-//        gyroAvgRoll = - roundDecimalNum(event.values[1]);
-
         if (sensorFirstTimeRead) {
-//            rollValueOffset = (float)Math.toDegrees(orientationValues[1]);
-//            pitchValueOffset = (float)Math.toDegrees(orientationValues[0]);
-          //  rollValueOffset = (orientationValues[1]);
             pitchValueOffset = (orientationValues[0]);
-
             sensorFirstTimeRead = false;
         }
-        if (orientationValues[0] <0)
-            pitch = (roundDecimalNum((float)Math.toDegrees(orientationValues[0]) + (float)Math.toDegrees(pitchValueOffset)));
+        if (orientationValues[0] < 0)
+            pitch = (roundDecimalNum((float) Math.toDegrees(orientationValues[0]) + (float) Math.toDegrees(pitchValueOffset)));
         else
-            pitch = (roundDecimalNum((float)Math.toDegrees(orientationValues[0]) - (float)Math.toDegrees(pitchValueOffset))); // y asix rotation
+            pitch = (roundDecimalNum((float) Math.toDegrees(orientationValues[0]) - (float) Math.toDegrees(pitchValueOffset))); // y asix rotation
 
-        roll = - roundDecimalNum((float)Math.toDegrees(orientationValues[1]));  // x axis rotation
+        roll = -roundDecimalNum((float) Math.toDegrees(orientationValues[1]));  // x axis rotation
 
         if (smoothOutputCheck) {
             gyroAvgRoll = roundDecimalNum(smoothOutput(gyroAvgRoll, roll, 3));
             gyroAvgPitch = roundDecimalNum(smoothOutput(gyroAvgPitch, pitch, 3));
-        }else {
+        } else {
             gyroAvgRoll = roll;
             gyroAvgPitch = pitch;
         }
-
-
-///   /******** gyro raw data readings=====
-//        if (firstTimeRead){
-//            pitchValueOffset = event.values[0];
-//            rollValueOffset = event.values[1];
-//            firstTimeRead=false;
-//        }
-//
-//        pitch = - roundDecimalNum(event.values[0]-pitchValueOffset) ;  // the minus sign is to invert the angle direction in regards with the phone movement
-//        roll= roundDecimalNum(event.values[1]-rollValueOffset) ;
-        //toll is index 1
-        // pitch is index 0
 
         return new Pair[]{new Pair<>("Roll: ", gyroAvgRoll), new Pair<>("Pitch: ", gyroAvgPitch)};
 
@@ -1018,12 +1039,11 @@ public class MainActivity extends Activity implements OnClickListener, SensorEve
 
 
     /**
-     // ========= inner class ===== bluetooth stream Listener thread============================================
-     /**
+     * // ========= inner class ===== bluetooth stream Listener thread============================================
+     * /**
      * Contains all the necessary functions to establish the connection thread with the paired bt device
      * the thread is utilized to listen to the incoming stream
-     *
-     * */
+     */
 
     public class BTStreamListener extends Thread {
 
@@ -1034,6 +1054,9 @@ public class MainActivity extends Activity implements OnClickListener, SensorEve
         private byte[] btReadBuffer;
         private Handler readBTHandler;
 
+        /**
+         * sets a listener for bt inputStream buffer to detect the incoming data, used specially to receive the video output from the robot
+         */
 
         private BTStreamListener() { //BluetoothSocket btSocket
 
@@ -1042,7 +1065,10 @@ public class MainActivity extends Activity implements OnClickListener, SensorEve
             readBTStream();
         }
 
-        private void openBTServerSocket () { //
+        /**
+         * recalls bt connection manger in case the bt connection is off
+         */
+        private void openBTServerSocket() { //
 
             if (!btConnectionStatus) {
                 try {
@@ -1052,14 +1078,17 @@ public class MainActivity extends Activity implements OnClickListener, SensorEve
             }
         }
 
+        /**
+         * reads and process the incoming data from the bt buffer
+         */
 
-        public void readBTStream() {
+        void readBTStream() {
             InputStream tempIN = null;
 
             try {
                 tempIN = btInputSocket.getInputStream();
             } catch (IOException e) {
-                showToastMSG(getApplicationContext(),"inputStream error:", "inputStream is empty");
+                showToastMSG(getApplicationContext(), "inputStream error:", "inputStream is empty");
             }
             btInStream = tempIN;
         }
@@ -1073,12 +1102,12 @@ public class MainActivity extends Activity implements OnClickListener, SensorEve
                 try {
                     numByte = btInStream.read(btReadBuffer);
 
-                    for(int bIndex=0;bIndex<numByte; bIndex++){
+                    for (int bIndex = 0; bIndex < numByte; bIndex++) {
 
-                        imageBuffer[numIndex]=btReadBuffer[bIndex];
+                        imageBuffer[numIndex] = btReadBuffer[bIndex];
                         numIndex++;
-                        if(bIndex>0){
-                            if(btReadBuffer[bIndex-1] == (byte) 0xFF && btReadBuffer[bIndex]==(byte)0xD9){
+                        if (bIndex > 0) {
+                            if (btReadBuffer[bIndex - 1] == (byte) 0xFF && btReadBuffer[bIndex] == (byte) 0xD9) {
                                 Message readMsg = readBTHandler.obtainMessage(0, numByte, -1, btReadBuffer);
                                 readMsg.sendToTarget();
                             }
@@ -1086,28 +1115,30 @@ public class MainActivity extends Activity implements OnClickListener, SensorEve
                     }
 
                 } catch (IOException e) {
-                    showToastMSG(getApplicationContext(),"bt stream read error", "input stream is disconnected");
+                    showToastMSG(getApplicationContext(), "bt stream read error", "input stream is disconnected");
                     closeConnection();
                     break;
                 }
             }
         }
-
     }
 
     /**
-     // ^^^^^^^^^^^^^^^^^^^^ inner class ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     * // ^^^^^^^^^^^^^^^^^^^^ inner class ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-     //================ bt inStream receiver thread ===========================================
 
-     /** starts the receiving buffer thread to capture all the incoming stream from the paired device
+
+     * //================ bt inStream receiver thread ===========================================
+
+     * /** starts the receiving buffer thread to capture all the incoming stream from the paired device
      * it runs the app as server to receive all the incoming bytes form the robot and it runs until it
      * get closed or the connection fails
      */
 
     private class INStreamListenService extends Thread {
 
-        private INStreamListenService() { }
+        private INStreamListenService() {
+        }
 
         public void run() {
 
@@ -1117,174 +1148,21 @@ public class MainActivity extends Activity implements OnClickListener, SensorEve
                 try {
                     bluetoothConnectionManager();
                 } catch (IOException e) {
-                    showToastMSG(getApplicationContext(),"BT connection Error:", "BT connection failed");
+                    showToastMSG(getApplicationContext(), "BT connection Error:", "BT connection failed");
                     break;
                 }
 
                 if (myBluetooth != null) {
                     synchronized (MainActivity.this) {
-
                         if (btSocket.getRemoteDevice() != null) {
                             startBTInboundListener();
                         }
                     }
-
                 }
             }
         }
     }
 
 /** ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ inner class ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
- //
- // //====================== inner class === DisplayImage ================================================================
- // */
-//
-//public class DisplayImage{
-//
-//
-//    public DisplayImage(){
-//
-//
-//
-//    }
-//
-//}
-///*** ======================= inner class ========= BT connection control =========================
-///**
-// * bluetooth connection control and socket handler
-// */
-//
-//
-//private class BTConnectionControl extends Thread{
-//
-//
-//
-//    public BTConnectionControl (BluetoothDevice btDevice){
-//
-//
-//
-//
-//    }
-//
-//
-//    public void run(){
-//
-//
-//}
-//
-//
-//
-//
-//
-//    }
-
+ */
 }
-
-
-
-
-
-//    //========================================== sub class ============================================================================
-///*
-//All buttons functions are included here
-// */
-
-
-//
-//    @SuppressLint("Registered")
-//    class ButtonsFunctions extends MainActivity{
-//
-//        @SuppressLint("ClickableViewAccessibility")
-//        public void moveForward (View v){  // move forward command
-//            // setButtonListener(btnForward, "F", msgForward);
-//            v.setOnTouchListener(new View.OnTouchListener() {
-//                @Override
-//                public boolean onTouch(View v, MotionEvent event) {
-//                    if (event.getAction() == MotionEvent.ACTION_DOWN) {
-//                        sendToBtStream("F");
-//                        displayMoveStatus(msgForward);
-//                    }
-//                    if (event.getAction() == MotionEvent.ACTION_UP) {
-//                        displayStopMSG();
-//                    }
-//                    return true;
-//                }});
-//        }
-//
-//        public void cameraSwitch(View v) {
-//            if (cameraSW.isChecked()) {
-//                //cameraSW.setTextOff("Camera ON");
-//                cameraSW.setText("Camera ON");
-//                sensorOut = true;
-//                screenStatusDisplay.setText("Camera is activated");
-//                viewCameraWindow.setVisibility(View.VISIBLE);
-//
-//            } else {
-//                //cameraSW.setTextOff("Camera OFF");
-//                cameraSW.setText("Camera OFF");
-//                sensorOut = false;
-//                screenStatusDisplay.setText("Camera is deactivated");
-//                viewCameraWindow.setVisibility(View.INVISIBLE);
-//            }
-//        }
-//
-//        @SuppressLint("ClickableViewAccessibility")
-//        public void moveReverse (View v){  // move in reverse command
-//            // setButtonListener(btnReverse, "R", msgBackward);
-//            v.setOnTouchListener(new View.OnTouchListener() {
-//                @Override
-//                public boolean onTouch(View v, MotionEvent event) {
-//
-//                    if (event.getAction() == MotionEvent.ACTION_DOWN) {
-//                        sendToBtStream("B");
-//                        displayMoveStatus(msgBackward);
-//
-//                    }
-//                    if (event.getAction() == MotionEvent.ACTION_UP) {
-//                        displayStopMSG();
-//                    }
-//                    return true;
-//                }});
-//        }
-//
-//        @SuppressLint("ClickableViewAccessibility")
-//        public void turnLeft (View v){ // turn to the left command
-//
-//            //setButtonListener(btnLeft, "L", msgLeft);
-//
-//            v.setOnTouchListener(new View.OnTouchListener() {
-//                @Override
-//                public boolean onTouch(View v, MotionEvent event) {
-//                    if (event.getAction() == MotionEvent.ACTION_DOWN) {
-//                        sendToBtStream("L");
-//                        displayMoveStatus(msgLeft);
-//
-//                    }
-//                    if (event.getAction() == MotionEvent.ACTION_UP) {
-//                        displayStopMSG();
-//                    }
-//                    return true;
-//                }});
-//        }
-//
-//        @SuppressLint("ClickableViewAccessibility")
-//        public void turnRight (View v){   // turn to the right command
-//
-//            //   setButtonListener(btnRight, "F", msgRight);
-//
-//            v.setOnTouchListener(new View.OnTouchListener() {
-//                @Override
-//
-//                public boolean onTouch(View v, MotionEvent event) {
-//                    if (event.getAction() == MotionEvent.ACTION_DOWN) {
-//                        sendToBtStream("R");
-//                        displayMoveStatus(msgRight);
-//                    }
-//                    if (event.getAction() == MotionEvent.ACTION_UP) {
-//                        displayStopMSG();
-//                    }
-//                    return true;
-//                }});
-//        }
-//    }

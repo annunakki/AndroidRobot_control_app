@@ -1,5 +1,19 @@
-package com.stevensit.www.cpe556_interface_app;
+/**
+ * settings menu, can change and store the value on the fly
+ * the functions for the preference shared values is set here
+ *contains:
+ *
+ * gyroscope calibration button
+ * About Button
+ * Help Button
+ *
+ * sensors output threshold for X axis
+ * sensors output threshold for Y axis
+ * sensors read delay
+ */
 
+
+package com.stevensit.www.cpe556_interface_app;
 
 /*
 
@@ -61,10 +75,25 @@ public class SettingMenu extends AppCompatActivity {
 
 
     /**
-     * checks for the entered numerical value is within the permitted set range
+     * listens and checks if the entered numerical values are within the permitted set ranges for the text input boxes
+     * for:
+     * gyro pitch threshold
+     * gyro roll threshold
+     * sensor delay
      */
 
     private void setTextListeners() {
+
+        gyroPitchThresholdBox();
+        gyroRollThresholdBox();
+        sensorReadDelayBox();
+    }
+
+    /**
+     * checks if the entered numerical value is within the permitted set range for the gyro pitch
+     */
+
+    public void gyroPitchThresholdBox() {
 
         editGyroPitchThresh.addTextChangedListener(new TextWatcher() {
             @Override
@@ -86,7 +115,6 @@ public class SettingMenu extends AppCompatActivity {
                     tempVal = Float.valueOf(text.toString());
                 }
 
-
                 try {
 
                     if (tempVal > maxVal) {
@@ -97,10 +125,13 @@ public class SettingMenu extends AppCompatActivity {
                 storeValue("pitch", text);
             }
         });
+    }
 
-        /**
-         * listens to the text changes of gyro roll input box
-         */
+    /**
+     * checks if the entered numerical value is within the permitted set range for the gyro pitch
+     */
+
+    public void  gyroRollThresholdBox() {
 
         editGyroRollThresh.addTextChangedListener(new TextWatcher() {
             @Override
@@ -133,6 +164,13 @@ public class SettingMenu extends AppCompatActivity {
                 storeValue("roll", text);
             }
         });
+    }
+
+    /**
+     * checks the entered values is within the set range for the sensor delay
+     */
+
+    public void sensorReadDelayBox(){
 
         editSensorDelay.addTextChangedListener(new TextWatcher() {
             @Override
@@ -170,8 +208,6 @@ public class SettingMenu extends AppCompatActivity {
                     sharedPref.saveIntValue("delay", Integer.valueOf(text.toString()));
             }
         });
-
-
     }
 
 
@@ -217,11 +253,8 @@ public class SettingMenu extends AppCompatActivity {
             smoothOutputCheck = true;
         else
             smoothOutputCheck= false;
-
     }
 
-
-    //public void settingMenu(View v){ }
 
     /**
      * it calibrates gyroscope sensor output to zero at the set orientation position of the phone
@@ -280,7 +313,6 @@ public class SettingMenu extends AppCompatActivity {
     public void aboutMenu(View v){
         Intent intentSettings = new Intent(this,AboutMenu.class);
         startActivity(intentSettings);
-
     }
 
 
@@ -292,7 +324,5 @@ public class SettingMenu extends AppCompatActivity {
     public void helpMenu(View v){
         Intent intentSettings = new Intent(this,HelpMenu.class);
         startActivity(intentSettings);
-
     }
-
 }

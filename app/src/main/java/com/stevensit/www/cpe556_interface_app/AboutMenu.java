@@ -1,3 +1,8 @@
+/**
+ * handles the page intent related to the about screen
+ */
+
+
 package com.stevensit.www.cpe556_interface_app;
 
 import android.os.Bundle;

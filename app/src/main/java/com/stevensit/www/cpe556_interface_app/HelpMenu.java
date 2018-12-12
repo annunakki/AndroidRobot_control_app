@@ -1,3 +1,7 @@
+ /**
+ * handles the page intent related to the help screen
+ */
+
 package com.stevensit.www.cpe556_interface_app;
 
 import android.os.Bundle;

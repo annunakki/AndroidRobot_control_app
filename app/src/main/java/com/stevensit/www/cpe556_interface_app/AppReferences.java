@@ -1,9 +1,11 @@
-package com.stevensit.www.cpe556_interface_app;
 /**
- * sets and stores the values of the entered settings values after app exit
+ * sets and stores the data of the entered settings values after app exit
  * then it restores it when start the app
- * it can be extended to any object or value type
+ * it can be extended to any object or value type needed
  */
+
+
+package com.stevensit.www.cpe556_interface_app;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
