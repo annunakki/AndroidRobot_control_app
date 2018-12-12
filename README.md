@@ -5,6 +5,8 @@ also it can display teh camera feed back on the app (only photos for now becauso
 The camera is monted on two small servo motorsm to enable the camera to move in two axis, X and Y, where the direction and the speed of the motors is controlled by the ouput of the gyroscope and the accelerometer sensors when move the phone.
 the app has various option can be set and conrolled by the user. also the main code had some untested commented out code that can be added later to expand the options and ability of the app
 
+PS: T3I.ino file is included here on the first page among the other files of the project 
+
 
 The hardware:
 
